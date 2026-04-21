@@ -266,9 +266,9 @@ input::placeholder{color:#c0b8a8;font-weight:500}
     </div>
 
     <div class="legend">
-      <div class="leg"><div class="leg-i">🟩</div><div><div class="leg-n">Bank</div><div class="leg-e" style="color:var(--green)">+2 COINS</div></div></div>
-      <div class="leg"><div class="leg-i">🟥</div><div><div class="leg-n">Heist</div><div class="leg-e" style="color:var(--red)">STEAL 2 COINS</div></div></div>
-      <div class="leg"><div class="leg-i">⬛</div><div><div class="leg-n">Trap</div><div class="leg-e" style="color:#555">LOSE 4 COINS</div></div></div>
+      <div class="leg"><div class="leg-i">🟩</div><div><div class="leg-n">Bank</div><div class="leg-e" style="color:var(--green)">+3 COINS</div></div></div>
+      <div class="leg"><div class="leg-i">🟥</div><div><div class="leg-n">Heist</div><div class="leg-e" style="color:var(--red)">STEAL 3 COINS (AUTO)</div></div></div>
+      <div class="leg"><div class="leg-i">⬛</div><div><div class="leg-n">Trap</div><div class="leg-e" style="color:#555">LOSE 3 COINS</div></div></div>
       <div class="leg"><div class="leg-i">⬜</div><div><div class="leg-n">Normal</div><div class="leg-e" style="color:var(--muted)">NOTHING</div></div></div>
     </div>
     <div class="reset-link" onclick="openReset()">↺ reset game</div>
@@ -298,7 +298,7 @@ input::placeholder{color:#c0b8a8;font-weight:500}
   </div>
   <div class="gbody">
     <div class="gleft">
-      <div class="blbl">// 🟩 BANK +2 · 🟥 HEIST STEAL 2 · ⬛ TRAP -4 · ⬜ NOTHING · 🏠 START</div>
+      <div class="blbl">// 🟩 BANK +3 · 🟥 HEIST STEAL 3 (auto) · ⬛ TRAP -3 · ⬜ NOTHING · 🏠 START</div>
       <div class="board" id="board"></div>
       <div class="dp" id="dp">
         <img class="dp-img" id="dp-img" src="" alt="">
@@ -306,10 +306,6 @@ input::placeholder{color:#c0b8a8;font-weight:500}
         <div class="die" id="die">🎲</div>
         <div class="dp-sec" id="dp-sec">—</div>
         <button class="rbtn" id="rbtn" disabled onclick="doRoll()">ROLL</button>
-      </div>
-      <div class="hpanel" id="hpanel">
-        <div class="hp-t">💰 PICK WHO TO ROB!</div>
-        <div class="hp-g" id="hp-g"></div>
       </div>
     </div>
     <div class="gright">
@@ -795,7 +791,6 @@ async function setupTurn(){
   if(G.over||G.busy) return;
   await syncTurnFromDB();
   const idx=G.cur%G.players.length; const p=G.players[idx]; if(!p) return;
-  document.getElementById('hpanel').classList.remove('on');
   document.getElementById('dp-img').src=p.img;
   document.getElementById('dp-nm').textContent=p.name;
   const myTurn=amIPlaying();
