@@ -420,21 +420,27 @@ function subscribeRoom(){
   subs.push(ch);
 }
 
-/* ══ GAME SUBSCRIPTION — listens for last_move to animate on all screens ══ */
+/* ══ GAME SUBSCRIPTION — listens for room updates to sync all screens ══ */
+let lastMoveTs = 0; // track last processed move timestamp to avoid replaying
 function subscribeGame(){
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
   const ch = sb.channel('game-'+myRoomId)
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+myRoomId},
       async p=>{
         if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
-        // If last_move changed and it wasn't us who moved, play animation
+        const newTurn = p.new.current_turn;
         const mv = p.new.last_move;
-        if(mv && mv.player_id !== myId && !G.busy){
-          G.cur = p.new.current_turn;
+
+        // A move was broadcast — animate it on ALL screens that haven't played it yet
+        if(mv && mv.ts && mv.ts > lastMoveTs){
+          lastMoveTs = mv.ts;
+          G.cur = newTurn;
           await syncPlayers();
-          await playMoveFromDB(mv);
-        } else if(!mv){
-          G.cur = p.new.current_turn;
+          // Everyone animates — roller and observers alike
+          if(!G.busy) await playMoveFromDB(mv);
+        } else if(!mv || !mv.ts){
+          // Turn changed with no move data (e.g. watchdog skip)
+          G.cur = newTurn;
           await syncPlayers();
           setupTurn();
         }
@@ -573,28 +579,38 @@ function animMove(pi,steps,finalPos,cb){
   next();
 }
 
-/* ══ PLAY MOVE FROM DB (observers see this) ══ */
+/* ══ PLAY MOVE FROM DB — runs on ALL devices including the roller ══ */
 async function playMoveFromDB(mv){
-  if(G.busy) return;
-  G.busy=true;
-  // Find player index
+  if(G.busy && mv.player_id === myId){
+    // We're the roller and already set busy=true, just animate
+  } else if(G.busy){
+    return; // another animation in progress
+  } else {
+    G.busy=true;
+  }
+
   const pi=G.players.findIndex(p=>p.id===mv.player_id);
-  if(pi<0){G.busy=false;return;}
+  if(pi<0){G.busy=false;setupTurn();return;}
   const p=G.players[pi];
 
-  // Show callout + die
+  // Reset player position to from_pos so animation starts correctly
+  p.pos=mv.from_pos||0;
+  renderBoard();
+
   animDieObs(mv.roll,()=>{
     callout(p.name+' rolled a '+mv.roll+'! 🎲','move',2500);
     addLog(p.name,'rolled a '+mv.roll,'#d4a017');
-    if(mv.looped){callout(p.name+' looped the board! 🔄','move',2000);addLog(p.name,'looped the board!','#d4a017');}
+    if(mv.looped){callout(p.name+' looped the board! 🔄','move',2000);}
+
     setTimeout(()=>{
       animMove(pi,mv.roll,mv.to_pos,()=>{
         setTimeout(()=>{
-          // Apply effect visually
           applyEffectObs(mv,pi,()=>{
-            G.busy=false;
-            renderBoard(); renderLB();
-            setupTurn();
+            setTimeout(()=>{
+              G.busy=false;
+              renderBoard(); renderLB();
+              setupTurn();
+            },1400);
           });
         },500);
       });
@@ -731,7 +747,7 @@ function callout(txt,type,ms=3000){
 }
 function clearCB(){document.getElementById('cb-wrap').innerHTML='';if(cbT)clearTimeout(cbT)}
 
-/* ══ ROLL — only the active player runs this ══ */
+/* ══ ROLL — roller pushes move to DB, then realtime triggers animation for ALL ══ */
 async function doRoll(){
   if(G.siv)clearInterval(G.siv);
   if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
@@ -748,33 +764,61 @@ async function doRoll(){
   const raw=(p.pos||0)+roll; const newPos=raw%BSIZE;
   const looped=raw>=BSIZE;
 
-  animDie(roll,()=>{
-    callout(p.name+' rolled a '+roll+'! 🎲','move',2500);
-    addLog(p.name,'rolled a '+roll,'#d4a017');
-    if(looped){callout(p.name+' looped the board! 🔄','move',2000);addLog(p.name,'looped the board!','#d4a017');}
+  // Calculate effect before pushing
+  const moveData = await calcMoveData(p,idx,roll,newPos,looped);
 
-    setTimeout(()=>{
-      animMove(idx,roll,newPos,()=>{
-        setTimeout(()=>{
-          applyEffect(idx,roll,newPos,looped,async(moveData)=>{
-            // Push player state
-            await pushPlayer(G.players[idx]);
-            if(moveData.steal_from){
-              const victim=G.players.find(p=>p.id===moveData.steal_from);
-              if(victim) await pushPlayer(victim);
-            }
-            setTimeout(async()=>{
-              G.busy=false; G.cur++;
-              renderBoard(); renderLB();
-              // Push turn + move data so ALL players animate
-              await pushTurn(moveData);
-              setupTurn();
-            },1400);
-          });
-        },500);
+  // Push everything to DB in one go — realtime fires for ALL devices
+  await pushPlayer(G.players[idx]);
+  if(moveData.steal_from){
+    const victim=G.players.find(pl=>pl.id===moveData.steal_from);
+    if(victim) await pushPlayer(victim);
+  }
+  G.cur++;
+  await pushTurn(moveData);
+  // G.busy stays true — the realtime event will call playMoveFromDB which resets it
+}
+
+/* ══ CALCULATE MOVE RESULT (no animation, just data) ══ */
+async function calcMoveData(p,idx,roll,newPos,looped){
+  const base={player_id:p.id,roll,from_pos:p.pos,to_pos:newPos,looped,ts:Date.now()};
+  const t=TILES[newPos];
+  if(t==='bank'){
+    G.players[idx].coins=Math.max(0,(p.coins||0)+2);
+    return {...base,effect:'bank'};
+  }
+  if(t==='heist'){
+    const tgts=G.players.filter((_,i)=>i!==idx&&(_.coins||0)>0);
+    if(!tgts.length) return {...base,effect:'heist_no_target'};
+    // Show heist picker — returns a promise
+    return new Promise(resolve=>{
+      showHPickerAsync(idx,tgts,(tg,amt)=>{
+        G.players[idx].coins=Math.max(0,(p.coins||0)+amt);
+        tg.coins=Math.max(0,tg.coins-amt);
+        resolve({...base,effect:'heist',steal_from:tg.id,steal_amt:amt});
       });
-    },1300);
+    });
+  }
+  if(t==='trap'){
+    const loss=Math.min(4,p.coins||0);
+    G.players[idx].coins=Math.max(0,(p.coins||0)-loss);
+    return {...base,effect:'trap',steal_amt:loss};
+  }
+  return {...base,effect:t==='safe'?'safe':'norm'};
+}
+
+function showHPickerAsync(pi,tgts,done){
+  const g=document.getElementById('hp-g'); g.innerHTML='';
+  tgts.forEach(tg=>{
+    const b=document.createElement('div'); b.className='hpc';
+    b.innerHTML=`<img src="${tg.img}" alt="${tg.name}"><div class="hpc-n">${tg.name}</div><div class="hpc-c">${tg.coins||0} 🪙</div>`;
+    b.onclick=()=>{
+      document.getElementById('hpanel').classList.remove('on');
+      const amt=Math.min(2,tg.coins||0);
+      done(tg,amt);
+    };
+    g.appendChild(b);
   });
+  document.getElementById('hpanel').classList.add('on');
 }
 
 /* ══ TILE EFFECTS (roller's screen) ══ */
