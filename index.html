@@ -299,8 +299,8 @@ input::placeholder{color:#c0b8a8;font-weight:500}
 
 <script>
 /* ══ CONFIG — filled by build script ══ */
-const SB_URL  = 'https://hdtidkkaudncycybgtun.supabase.co';
-const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhkdGlka2thdWRuY3ljeWJndHVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY3NTM4MzgsImV4cCI6MjA5MjMyOTgzOH0.GEaKlcFbtyBNbwahHHMuSwsUzt0VCkkQjfp2VrSeeGM';
+const SB_URL  = '%%SB_URL%%';
+const SB_KEY  = '%%SB_KEY%%';
 const ADMIN_PW = 'hello';
 
 const AVA_DATA=[
@@ -328,7 +328,7 @@ const TM={
 
 /* ══ STATE ══ */
 let sb, myId, myName, myAvaId, myAvaImg, myRoomId, myRoomCode, isAdmin=false;
-let G={players:[],cur:0,timeLeft:GSECS,gameDur:GSECS,tiv:null,siv:null,sleft:TSECS,over:false,busy:false};
+let G={players:[],cur:0,timeLeft:GSECS,gameDur:GSECS,timerStart:null,tiv:null,siv:null,sleft:TSECS,over:false,busy:false};
 let assignedAvas=new Set(), subs=[];
 
 /* ══ INIT SUPABASE ══ */
@@ -444,7 +444,9 @@ function subscribeGame(){
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'players',filter:'room_id=eq.'+myRoomId},
       ()=>syncPlayers())
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+myRoomId},
-      async p=>{ G.cur=p.new.current_turn; await syncPlayers(); setupTurn(); })
+      async p=>{ 
+        if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
+        G.cur=p.new.current_turn; await syncPlayers(); setupTurn(); })
     .subscribe();
   subs.push(ch);
 }
@@ -500,11 +502,15 @@ async function loadGame(room){
   });
   G.cur = room.current_turn||0;
   G.over=false; G.busy=false;
+  G.gameDur = room.duration_secs||GSECS;
   if(room.timer_start){
-    const el=(Date.now()-new Date(room.timer_start).getTime())/1000;
-    G.timeLeft=Math.max(0,(room.duration_secs||GSECS)-el);
-  } else G.timeLeft=GSECS;
-  G.gameDur=GSECS;
+    G.timerStart = new Date(room.timer_start).getTime();
+    const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
+    G.timeLeft=Math.max(0,G.gameDur-elapsed);
+  } else {
+    G.timerStart = Date.now();
+    G.timeLeft=GSECS;
+  }
 
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
   subscribeGame();
@@ -582,10 +588,21 @@ function animMove(pi,steps,finalPos,cb){
 /* ══ TIMER ══ */
 function startTimer(){
   if(G.tiv)clearInterval(G.tiv);
-  G.tiv=setInterval(()=>{G.timeLeft=Math.max(0,G.timeLeft-1);drawTimer();if(G.timeLeft<=0){clearInterval(G.tiv);endGame()}},1000);
+  G.tiv=setInterval(()=>{
+    // Always recalculate from the stored start time — every device stays in sync
+    if(G.timerStart){
+      const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
+      G.timeLeft=Math.max(0,G.gameDur-elapsed);
+    } else {
+      G.timeLeft=Math.max(0,G.timeLeft-1);
+    }
+    drawTimer();
+    if(G.timeLeft<=0){clearInterval(G.tiv);endGame()}
+  },1000);
 }
 function drawTimer(){
-  const m=~~(G.timeLeft/60),s=G.timeLeft%60;
+  const tl=Math.floor(G.timeLeft);
+  const m=~~(tl/60),s=tl%60;
   document.getElementById('tmr').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
   const pct=(G.timeLeft/G.gameDur)*100;
   const f=document.getElementById('tmr-f'); f.style.width=pct+'%';
@@ -594,6 +611,7 @@ function drawTimer(){
 }
 
 /* ══ TURN SETUP ══ */
+let G_watchdog=null;
 function setupTurn(){
   if(G.over||G.busy)return;
   const idx=G.cur%G.players.length; const p=G.players[idx]; if(!p)return;
@@ -606,7 +624,25 @@ function setupTurn(){
   document.getElementById('dp-sub').classList.toggle('on',myTurn);
   document.getElementById('rbtn').disabled=!myTurn;
   showAnnounce(p,myTurn);
-  if(myTurn) startSec(); else {if(G.siv)clearInterval(G.siv);document.getElementById('dp-sec').textContent='—'}
+  // Clear any existing watchdog
+  if(G_watchdog)clearTimeout(G_watchdog);
+  if(myTurn){
+    startSec();
+  } else {
+    if(G.siv)clearInterval(G.siv);
+    document.getElementById('dp-sec').textContent='—';
+    // Watchdog: if other player is inactive, auto-advance after TSECS+5s
+    G_watchdog=setTimeout(()=>{
+      if(!G.busy&&!G.over&&!amIPlaying()){
+        // The current player hasn't moved — force advance the turn
+        G.busy=false;
+        G.cur++;
+        renderBoard(); renderLB();
+        pushTurn();
+        setupTurn();
+      }
+    },(TSECS+5)*1000);
+  }
   renderLB();
 }
 function startSec(){
@@ -644,6 +680,7 @@ function clearCB(){document.getElementById('cb-wrap').innerHTML='';if(cbT)clearT
 /* ══ ROLL ══ */
 async function doRoll(){
   if(G.siv)clearInterval(G.siv);
+  if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
   if(G.busy||!amIPlaying())return;
   G.busy=true;
   document.getElementById('rbtn').disabled=true;
@@ -781,7 +818,7 @@ function endGame(){
 /* ══ UTILS ══ */
 function scr(n){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(n).classList.add('on')}
 function showErr(m){const e=document.getElementById('lob-err');e.textContent=m;e.style.display=m?'block':'none'}
-function quitGame(){if(confirm('Quit?')){if(G.tiv)clearInterval(G.tiv);if(G.siv)clearInterval(G.siv);location.reload()}}
+function quitGame(){if(confirm('Quit?')){if(G.tiv)clearInterval(G.tiv);if(G.siv)clearInterval(G.siv);if(G_watchdog)clearTimeout(G_watchdog);location.reload()}}
 </script>
 </body>
 </html>
