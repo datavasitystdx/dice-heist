@@ -534,7 +534,10 @@ async function syncPlayers(){
   if(!data) return;
   G.players = data.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
-    return {...p, img:ava.img, pos:p.position||0, coins:p.coins||0};
+    // Keep current animated position if we are mid-animation (busy)
+    const existing = G.players.find(ep=>ep.id===p.id);
+    const pos = (G.busy && existing) ? existing.pos : (p.position||0);
+    return {...p, img:ava.img, pos, coins:p.coins||0};
   });
   renderBoard(); renderLB();
 }
@@ -858,7 +861,7 @@ function applyEffect(pi,roll,newPos,looped,done){
       addLog(p.name,'Heist — no targets!','#e03030');
       done({...base,effect:'heist_no_target'}); return;
     }
-    callout('🟥 HEIST! '+p.name+' — pick your target!','heist',8000);
+    callout('🟥 HEIST! '+p.name+' — pick your target! (10s)','heist',10000);
     flash('rgba(224,48,48,.12)');
     showHPicker(pi,tgts,(tg,amt)=>{
       done({...base,effect:'heist',steal_from:tg.id,steal_amt:amt});
@@ -879,10 +882,27 @@ function applyEffect(pi,roll,newPos,looped,done){
 
 function showHPicker(pi,tgts,done){
   const g=document.getElementById('hp-g'); g.innerHTML='';
+  let picked=false;
+  // Auto-pick random target after 10 seconds
+  const autoT=setTimeout(()=>{
+    if(!picked){
+      picked=true;
+      document.getElementById('hpanel').classList.remove('on'); clearCB();
+      const tg=tgts[~~(Math.random()*tgts.length)];
+      const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
+      tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
+      callout('🟥 HEIST! '+p.name+' auto-robbed '+tg.name+'!','heist',3500);
+      toast('💰 '+p.name+' robbed '+tg.name+'!','tr');
+      addLog(p.name,'💰 HEIST! Auto-stole '+amt+' from '+tg.name+'!','#e03030');
+      flash('rgba(224,48,48,.18)'); burst(amt,false); renderLB();
+      done(tg,amt);
+    }
+  },10000);
   tgts.forEach(tg=>{
     const b=document.createElement('div'); b.className='hpc';
     b.innerHTML=`<img src="${tg.img}" alt="${tg.name}"><div class="hpc-n">${tg.name}</div><div class="hpc-c">${tg.coins||0} 🪙</div>`;
     b.onclick=()=>{
+      if(picked)return; picked=true; clearTimeout(autoT);
       document.getElementById('hpanel').classList.remove('on'); clearCB();
       const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
       tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
