@@ -344,81 +344,63 @@ function onType(val){
   const btn=document.getElementById('join-btn');
   btn.disabled = val.trim().length < 1;
   if(val.trim().length >= 1){
-    // Pick avatar based on char code of first letter
     const idx = val.trim().toLowerCase().charCodeAt(0) % AVA_DATA.length;
     const ava = AVA_DATA[idx];
     const img=document.getElementById('ava-prev');
-    img.src = ava.img;
-    img.classList.add('set');
+    img.src = ava.img; img.classList.add('set');
     document.getElementById('ava-lbl').textContent = ava.name.toUpperCase();
-    myAvaId  = ava.id;
-    myAvaImg = ava.img;
+    myAvaId = ava.id; myAvaImg = ava.img;
   }
 }
 
-/* ══ JOIN GAME ══ */
+/* ══ JOIN GAME — blocks joining if room is already playing ══ */
 async function joinGame(){
   const name = document.getElementById('name-inp').value.trim();
   if(!name) return;
   if(!initSB()) return;
-
   showErr('');
   document.getElementById('join-btn').disabled = true;
   document.getElementById('join-btn').textContent = 'Joining...';
-
   try {
-    // Find or create a lobby room
     let { data: rooms } = await sb.from('rooms').select('*').eq('status','lobby').limit(1);
     let room;
-
     if(rooms && rooms.length > 0){
-      room = rooms[0];
-      isAdmin = false;
+      room = rooms[0]; isAdmin = false;
     } else {
-      // Create new room — this player is admin
+      // Check if there's a playing room — if so, show error
+      const { data: playingRooms } = await sb.from('rooms').select('*').eq('status','playing').limit(1);
+      if(playingRooms && playingRooms.length > 0){
+        showErr('A game is already in progress. Please wait for it to finish.');
+        document.getElementById('join-btn').disabled=false;
+        document.getElementById('join-btn').textContent='JOIN THE HEIST →';
+        return;
+      }
       const code = Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[~~(Math.random()*32)]).join('');
       const {data:r,error:re} = await sb.from('rooms').insert({code, status:'lobby'}).select().single();
       if(re) throw re;
-      room = r;
-      isAdmin = true;
+      room = r; isAdmin = true;
     }
-
-    myRoomId   = room.id;
-    myRoomCode = room.code;
-
-    // Pick avatar — avoid duplicates
+    myRoomId = room.id; myRoomCode = room.code;
     const {data:existing} = await sb.from('players').select('avatar').eq('room_id',room.id);
     const usedAva = new Set((existing||[]).map(p=>p.avatar));
     let ava = AVA_DATA.find(a=>a.id===myAvaId && !usedAva.has(a.id));
     if(!ava) ava = AVA_DATA.find(a=>!usedAva.has(a.id)) || AVA_DATA[~~(Math.random()*AVA_DATA.length)];
-
-    myAvaId  = ava.id;
-    myAvaImg = ava.img;
-    myName   = name;
-
+    myAvaId = ava.id; myAvaImg = ava.img; myName = name;
     const turnOrder = (existing||[]).length;
     const {data:player,error:pe} = await sb.from('players').insert({
       room_id: myRoomId, name, avatar: myAvaId,
       coins:10, position:0, turn_order: turnOrder, is_admin: isAdmin
     }).select().single();
     if(pe) throw pe;
-
     myId = player.id;
-
-    // Update avatar preview to confirmed avatar
     document.getElementById('ava-prev').src = ava.img;
     document.getElementById('ava-lbl').textContent = ava.name.toUpperCase();
-
-    // Show lobby UI
     document.getElementById('name-card').style.display = 'none';
     const js = document.getElementById('joined-sec');
     js.style.display = 'flex'; js.style.flexDirection='column'; js.style.gap='10px';
     if(isAdmin) document.getElementById('admin-box').style.display = 'block';
-
-    // Subscribe to realtime
     subscribeRoom();
     await refreshPlayers();
-
   } catch(e) {
     showErr('Error: '+(e.message||e));
     document.getElementById('join-btn').disabled=false;
@@ -429,7 +411,6 @@ async function joinGame(){
 /* ══ REALTIME SUBSCRIPTIONS ══ */
 function subscribeRoom(){
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
-
   const ch = sb.channel('room-'+myRoomId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'players',filter:'room_id=eq.'+myRoomId},
       ()=>refreshPlayers())
@@ -439,19 +420,29 @@ function subscribeRoom(){
   subs.push(ch);
 }
 
+/* ══ GAME SUBSCRIPTION — listens for last_move to animate on all screens ══ */
 function subscribeGame(){
+  subs.forEach(s=>sb.removeChannel(s)); subs=[];
   const ch = sb.channel('game-'+myRoomId)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'players',filter:'room_id=eq.'+myRoomId},
-      ()=>syncPlayers())
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+myRoomId},
-      async p=>{ 
+      async p=>{
         if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
-        G.cur=p.new.current_turn; await syncPlayers(); setupTurn(); })
+        // If last_move changed and it wasn't us who moved, play animation
+        const mv = p.new.last_move;
+        if(mv && mv.player_id !== myId && !G.busy){
+          G.cur = p.new.current_turn;
+          await syncPlayers();
+          await playMoveFromDB(mv);
+        } else if(!mv){
+          G.cur = p.new.current_turn;
+          await syncPlayers();
+          setupTurn();
+        }
+      })
     .subscribe();
   subs.push(ch);
 }
 
-/* ══ REFRESH LOBBY PLAYER LIST ══ */
 async function refreshPlayers(){
   const {data} = await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
   if(!data) return;
@@ -477,16 +468,10 @@ async function adminStart(){
   if(pw!==ADMIN_PW){showErr('Wrong password!');return}
   const {data} = await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
   if(!data||data.length<1){showErr('Need at least 1 player!');return}
-
-  // Mark all players as playing
-  await sb.from('players').update({status:'playing'}).eq('room_id',myRoomId);
-  // Update room to playing
   await sb.from('rooms').update({
-    status:'playing', current_turn:0,
+    status:'playing', current_turn:0, last_move:null,
     timer_start: new Date().toISOString(), duration_secs: GSECS
   }).eq('id',myRoomId);
-
-  // Load game for self
   const {data:room} = await sb.from('rooms').select('*').eq('id',myRoomId).single();
   loadGame(room);
 }
@@ -495,7 +480,6 @@ async function adminStart(){
 async function loadGame(room){
   const {data:players} = await sb.from('players').select('*').eq('room_id',room.id).order('turn_order');
   if(!players) return;
-
   G.players = players.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
     return {...p, img:ava.img, pos:p.position||0};
@@ -507,14 +491,9 @@ async function loadGame(room){
     G.timerStart = new Date(room.timer_start).getTime();
     const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
     G.timeLeft=Math.max(0,G.gameDur-elapsed);
-  } else {
-    G.timerStart = Date.now();
-    G.timeLeft=GSECS;
-  }
-
+  } else { G.timerStart=Date.now(); G.timeLeft=GSECS; }
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
   subscribeGame();
-
   buildBoard(); scr('s-game');
   startTimer(); renderBoard(); renderLB(); setupTurn();
   addLog(null,'🎲 THE HEIST HAS STARTED!','#d4a017');
@@ -526,26 +505,35 @@ async function syncPlayers(){
   if(!data) return;
   G.players = data.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
-    const old=G.players.find(op=>op.id===p.id);
-    return {...p, img:ava.img, pos:p.position||0, coins:p.coins||0, _old:old};
+    return {...p, img:ava.img, pos:p.position||0, coins:p.coins||0};
   });
   renderBoard(); renderLB();
 }
 
-/* ══ PUSH PLAYER STATE TO DB ══ */
+/* ══ PUSH STATE ══ */
 async function pushPlayer(p){
   if(!sb) return;
   await sb.from('players').update({coins:p.coins, position:p.pos||0}).eq('id',p.id);
 }
-async function pushTurn(){
+async function pushTurn(moveData){
   if(!sb) return;
-  await sb.from('rooms').update({current_turn:G.cur}).eq('id',myRoomId);
+  const update = {current_turn:G.cur};
+  if(moveData) update.last_move = moveData;
+  const {error} = await sb.from('rooms').update(update).eq('id',myRoomId);
+  if(error) console.error('pushTurn error:', error);
 }
 
 /* ══ IS MY TURN? ══ */
 function amIPlaying(){
+  if(!G.players.length) return false;
   const idx=G.cur%G.players.length;
   return G.players[idx]?.id === myId;
+}
+
+/* ══ SYNC CURRENT TURN FROM DB ══ */
+async function syncTurnFromDB(){
+  const {data:room} = await sb.from('rooms').select('current_turn').eq('id',myRoomId).single();
+  if(room && room.current_turn !== undefined) G.cur = room.current_turn;
 }
 
 /* ══ BOARD ══ */
@@ -567,7 +555,7 @@ function renderBoard(){
   });
 }
 
-/* ══ ANIMATED MOVE ══ */
+/* ══ ANIMATED MOVE (used by both roller AND observers) ══ */
 function animMove(pi,steps,finalPos,cb){
   const p=G.players[pi]; let cur=p.pos||0; let step=0;
   function next(){
@@ -585,17 +573,85 @@ function animMove(pi,steps,finalPos,cb){
   next();
 }
 
+/* ══ PLAY MOVE FROM DB (observers see this) ══ */
+async function playMoveFromDB(mv){
+  if(G.busy) return;
+  G.busy=true;
+  // Find player index
+  const pi=G.players.findIndex(p=>p.id===mv.player_id);
+  if(pi<0){G.busy=false;return;}
+  const p=G.players[pi];
+
+  // Show callout + die
+  animDieObs(mv.roll,()=>{
+    callout(p.name+' rolled a '+mv.roll+'! 🎲','move',2500);
+    addLog(p.name,'rolled a '+mv.roll,'#d4a017');
+    if(mv.looped){callout(p.name+' looped the board! 🔄','move',2000);addLog(p.name,'looped the board!','#d4a017');}
+    setTimeout(()=>{
+      animMove(pi,mv.roll,mv.to_pos,()=>{
+        setTimeout(()=>{
+          // Apply effect visually
+          applyEffectObs(mv,pi,()=>{
+            G.busy=false;
+            renderBoard(); renderLB();
+            setupTurn();
+          });
+        },500);
+      });
+    },1300);
+  });
+}
+
+/* ══ Die animation for observer (shows result directly) ══ */
+function animDieObs(res,cb){
+  const el=document.getElementById('die'); el.classList.add('spin'); let t=0;
+  const iv=setInterval(()=>{el.textContent=DFACE[~~(Math.random()*6)];if(++t>14){clearInterval(iv);el.classList.remove('spin');el.textContent=DFACE[res-1];cb()}},65);
+}
+
+/* ══ Apply effect from DB data (for observers) ══ */
+function applyEffectObs(mv,pi,done){
+  const p=G.players[pi];
+  if(mv.effect==='bank'){
+    p.coins=Math.max(0,(p.coins||0)+2);
+    callout('🟩 BANK! '+p.name+' collects +2 coins!','bank',3200);
+    toast('+2 COINS!','tgr'); addLog(p.name,'landed on 🟩 Bank! +2 coins','#1a9e5a');
+    flash('rgba(26,158,90,.2)'); burst(2,true); renderLB(); done(); return;
+  }
+  if(mv.effect==='heist'&&mv.steal_from){
+    const tg=G.players.find(p=>p.id===mv.steal_from);
+    if(tg){
+      tg.coins=Math.max(0,tg.coins-(mv.steal_amt||0));
+      p.coins=Math.max(0,(p.coins||0)+(mv.steal_amt||0));
+    }
+    callout('🟥 HEIST! '+p.name+' stole '+(mv.steal_amt||0)+' coins!','heist',3500);
+    toast('💰 '+p.name+' robbed someone!','tr');
+    addLog(p.name,'💰 HEIST! Stole '+(mv.steal_amt||0)+' coins!','#e03030');
+    flash('rgba(224,48,48,.18)'); burst(mv.steal_amt||0,false); renderLB(); done(); return;
+  }
+  if(mv.effect==='heist_no_target'){
+    callout('🟥 HEIST — no one to rob!','heist',2500);
+    addLog(p.name,'Heist — no targets!','#e03030'); done(); return;
+  }
+  if(mv.effect==='trap'){
+    const loss=mv.steal_amt||0;
+    p.coins=Math.max(0,(p.coins||0)-loss);
+    callout('⬛ TRAP! '+p.name+' loses '+loss+' coins!','trap',3500);
+    toast('⬛ TRAP! -'+loss+' COINS','tb2');
+    addLog(p.name,'hit ⬛ Trap! Lost '+loss+' coins','#ff4444');
+    flash('rgba(0,0,0,.25)'); renderLB(); done(); return;
+  }
+  if(mv.effect!=='safe'){callout('⬜ '+p.name+' — Normal tile, nothing happens','norm',2500);addLog(p.name,'normal tile — nothing happens','#7a7a9a');}
+  done();
+}
+
 /* ══ TIMER ══ */
 function startTimer(){
   if(G.tiv)clearInterval(G.tiv);
   G.tiv=setInterval(()=>{
-    // Always recalculate from the stored start time — every device stays in sync
     if(G.timerStart){
       const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
       G.timeLeft=Math.max(0,G.gameDur-elapsed);
-    } else {
-      G.timeLeft=Math.max(0,G.timeLeft-1);
-    }
+    } else G.timeLeft=Math.max(0,G.timeLeft-1);
     drawTimer();
     if(G.timeLeft<=0){clearInterval(G.tiv);endGame()}
   },1000);
@@ -604,16 +660,17 @@ function drawTimer(){
   const tl=Math.floor(G.timeLeft);
   const m=~~(tl/60),s=tl%60;
   document.getElementById('tmr').textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  const pct=(G.timeLeft/G.gameDur)*100;
+  const pct=(tl/G.gameDur)*100;
   const f=document.getElementById('tmr-f'); f.style.width=pct+'%';
-  const c=G.timeLeft<=60?'#e03030':G.timeLeft<=120?'#d4a017':'#1a9e5a';
+  const c=tl<=60?'#e03030':tl<=120?'#d4a017':'#1a9e5a';
   f.style.background=c; document.getElementById('tmr').style.color=c;
 }
 
 /* ══ TURN SETUP ══ */
 let G_watchdog=null;
-function setupTurn(){
+async function setupTurn(){
   if(G.over||G.busy)return;
+  await syncTurnFromDB();
   const idx=G.cur%G.players.length; const p=G.players[idx]; if(!p)return;
   document.getElementById('hpanel').classList.remove('on');
   document.getElementById('dp-img').src=p.img;
@@ -624,21 +681,18 @@ function setupTurn(){
   document.getElementById('dp-sub').classList.toggle('on',myTurn);
   document.getElementById('rbtn').disabled=!myTurn;
   showAnnounce(p,myTurn);
-  // Clear any existing watchdog
   if(G_watchdog)clearTimeout(G_watchdog);
   if(myTurn){
     startSec();
   } else {
     if(G.siv)clearInterval(G.siv);
     document.getElementById('dp-sec').textContent='—';
-    // Watchdog: if other player is inactive, auto-advance after TSECS+5s
-    G_watchdog=setTimeout(()=>{
+    // Watchdog: if active player doesn't roll in time, force advance
+    G_watchdog=setTimeout(async()=>{
       if(!G.busy&&!G.over&&!amIPlaying()){
-        // The current player hasn't moved — force advance the turn
-        G.busy=false;
-        G.cur++;
+        G.busy=false; G.cur++;
         renderBoard(); renderLB();
-        pushTurn();
+        await pushTurn(null);
         setupTurn();
       }
     },(TSECS+5)*1000);
@@ -677,7 +731,7 @@ function callout(txt,type,ms=3000){
 }
 function clearCB(){document.getElementById('cb-wrap').innerHTML='';if(cbT)clearTimeout(cbT)}
 
-/* ══ ROLL ══ */
+/* ══ ROLL — only the active player runs this ══ */
 async function doRoll(){
   if(G.siv)clearInterval(G.siv);
   if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
@@ -691,25 +745,29 @@ async function doRoll(){
 
   const roll=~~(Math.random()*6)+1;
   const idx=G.cur%G.players.length; const p=G.players[idx];
+  const raw=(p.pos||0)+roll; const newPos=raw%BSIZE;
+  const looped=raw>=BSIZE;
 
   animDie(roll,()=>{
     callout(p.name+' rolled a '+roll+'! 🎲','move',2500);
     addLog(p.name,'rolled a '+roll,'#d4a017');
+    if(looped){callout(p.name+' looped the board! 🔄','move',2000);addLog(p.name,'looped the board!','#d4a017');}
 
     setTimeout(()=>{
-      const raw=(p.pos||0)+roll; const newPos=raw%BSIZE;
-      if(raw>=BSIZE){callout(p.name+' looped the board! 🔄','move',2000);addLog(p.name,'looped the board!','#d4a017')}
-
       animMove(idx,roll,newPos,()=>{
         setTimeout(()=>{
-          applyEffect(idx,async()=>{
-            // Push updated player state to DB
+          applyEffect(idx,roll,newPos,looped,async(moveData)=>{
+            // Push player state
             await pushPlayer(G.players[idx]);
-            // If heist stole from someone else, push that too
+            if(moveData.steal_from){
+              const victim=G.players.find(p=>p.id===moveData.steal_from);
+              if(victim) await pushPlayer(victim);
+            }
             setTimeout(async()=>{
               G.busy=false; G.cur++;
               renderBoard(); renderLB();
-              await pushTurn(); // triggers realtime for other players
+              // Push turn + move data so ALL players animate
+              await pushTurn(moveData);
               setupTurn();
             },1400);
           });
@@ -719,30 +777,42 @@ async function doRoll(){
   });
 }
 
-/* ══ TILE EFFECTS ══ */
-function applyEffect(pi,done){
-  const p=G.players[pi]; const t=TILES[p.pos||0];
+/* ══ TILE EFFECTS (roller's screen) ══ */
+function applyEffect(pi,roll,newPos,looped,done){
+  const p=G.players[pi]; const t=TILES[newPos];
+  const base={player_id:p.id,roll,from_pos:p.pos,to_pos:newPos,looped,ts:Date.now()};
+
   if(t==='bank'){
     p.coins=Math.max(0,(p.coins||0)+2);
-    callout('🟩 BANK!  '+p.name+' collects +2 coins!','bank',3200);
+    callout('🟩 BANK! '+p.name+' collects +2 coins!','bank',3200);
     toast('+2 COINS!','tgr'); addLog(p.name,'landed on 🟩 Bank! +2 coins','#1a9e5a');
-    flash('rgba(26,158,90,.2)'); burst(2,true); renderLB(); done(); return;
+    flash('rgba(26,158,90,.2)'); burst(2,true); renderLB();
+    done({...base,effect:'bank'}); return;
   }
   if(t==='heist'){
     const tgts=G.players.filter((_,i)=>i!==pi&&(_.coins||0)>0);
-    if(!tgts.length){callout('🟥 HEIST — no one to rob!','heist',2500);addLog(p.name,'Heist — no targets!','#e03030');done();return}
-    callout('🟥 HEIST!  '+p.name+' — pick your target!','heist',8000);
-    flash('rgba(224,48,48,.12)'); showHPicker(pi,tgts,done); return;
+    if(!tgts.length){
+      callout('🟥 HEIST — no one to rob!','heist',2500);
+      addLog(p.name,'Heist — no targets!','#e03030');
+      done({...base,effect:'heist_no_target'}); return;
+    }
+    callout('🟥 HEIST! '+p.name+' — pick your target!','heist',8000);
+    flash('rgba(224,48,48,.12)');
+    showHPicker(pi,tgts,(tg,amt)=>{
+      done({...base,effect:'heist',steal_from:tg.id,steal_amt:amt});
+    }); return;
   }
   if(t==='trap'){
     const loss=Math.min(4,p.coins||0);
     p.coins=Math.max(0,(p.coins||0)-4);
-    callout('⬛ TRAP!  '+p.name+' loses '+loss+' coins!','trap',3500);
-    toast('⬛ TRAP! -'+loss+' COINS','tb2'); addLog(p.name,'hit ⬛ Trap! Lost '+loss+' coins','#ff4444');
-    flash('rgba(0,0,0,.25)'); renderLB(); done(); return;
+    callout('⬛ TRAP! '+p.name+' loses '+loss+' coins!','trap',3500);
+    toast('⬛ TRAP! -'+loss+' COINS','tb2');
+    addLog(p.name,'hit ⬛ Trap! Lost '+loss+' coins','#ff4444');
+    flash('rgba(0,0,0,.25)'); renderLB();
+    done({...base,effect:'trap',steal_amt:loss}); return;
   }
-  if(t!=='safe'){callout('⬜ '+p.name+' — Normal tile, nothing happens','norm',2500);addLog(p.name,'normal tile — nothing happens','#7a7a9a')}
-  done();
+  if(t!=='safe'){callout('⬜ '+p.name+' — Normal tile, nothing happens','norm',2500);addLog(p.name,'normal tile — nothing happens','#7a7a9a');}
+  done({...base,effect:'norm'});
 }
 
 function showHPicker(pi,tgts,done){
@@ -750,20 +820,19 @@ function showHPicker(pi,tgts,done){
   tgts.forEach(tg=>{
     const b=document.createElement('div'); b.className='hpc';
     b.innerHTML=`<img src="${tg.img}" alt="${tg.name}"><div class="hpc-n">${tg.name}</div><div class="hpc-c">${tg.coins||0} 🪙</div>`;
-    b.onclick=()=>doHeist(pi,tg,done); g.appendChild(b);
+    b.onclick=()=>{
+      document.getElementById('hpanel').classList.remove('on'); clearCB();
+      const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
+      tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
+      callout('🟥 HEIST! '+p.name+' stole '+amt+' coins from '+tg.name+'!','heist',3500);
+      toast('💰 '+p.name+' robbed '+tg.name+'!','tr');
+      addLog(p.name,'💰 HEIST! Stole '+amt+' from '+tg.name+'!','#e03030');
+      flash('rgba(224,48,48,.18)'); burst(amt,false); renderLB();
+      done(tg,amt);
+    };
+    g.appendChild(b);
   });
   document.getElementById('hpanel').classList.add('on');
-}
-async function doHeist(pi,tg,done){
-  document.getElementById('hpanel').classList.remove('on'); clearCB();
-  const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
-  tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
-  callout('🟥 HEIST!  '+p.name+' stole '+amt+' coins from '+tg.name+'!','heist',3500);
-  toast('💰 '+p.name+' robbed '+tg.name+'!','tr');
-  addLog(p.name,'💰 HEIST! Stole '+amt+' from '+tg.name+'!','#e03030');
-  flash('rgba(224,48,48,.18)'); burst(amt,false); renderLB();
-  await pushPlayer(tg); // push victim's updated coins
-  done();
 }
 
 /* ══ DIE ANIM ══ */
@@ -803,6 +872,7 @@ function flash(c){const el=document.createElement('div');el.className='flash';el
 function endGame(){
   if(G.over)return; G.over=true;
   if(G.tiv)clearInterval(G.tiv); if(G.siv)clearInterval(G.siv);
+  if(G_watchdog)clearTimeout(G_watchdog);
   if(sb) sb.from('rooms').update({status:'finished'}).eq('id',myRoomId);
   clearCB(); document.getElementById('ta').classList.remove('on');
   document.getElementById('hpanel').classList.remove('on');
