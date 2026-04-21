@@ -397,12 +397,7 @@ async function joinGame(){
     if(rooms && rooms.length > 0){
       room = rooms[0]; isAdmin = false;
     } else {
-      // Check if there's a playing room — reset it to lobby so new players can join
-      const { data: playingRooms } = await sb.from('rooms').select('*').neq('status','finished').limit(1);
-      if(playingRooms && playingRooms.length > 0){
-        // Found a stuck/playing room — treat it as lobby
-        room = playingRooms[0]; isAdmin = false;
-      } else {
+      // No lobby room — create one (this player is admin/host)
       const code = Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[~~(Math.random()*32)]).join('');
       const {data:r,error:re} = await sb.from('rooms').insert({code, status:'lobby'}).select().single();
       if(re) throw re;
@@ -979,8 +974,9 @@ async function confirmReset(){
     const btn=document.querySelector('.btn-danger');
     btn.textContent='Resetting...'; btn.disabled=true;
     // Delete all players first, then all rooms
-    await sb.from('players').delete().neq('id','00000000-0000-0000-0000-000000000000');
-    await sb.from('rooms').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    // Delete all players then all rooms
+    await sb.from('players').delete().gte('turn_order',0);
+    await sb.from('rooms').delete().in('status',['lobby','playing','finished']);
     closeReset();
     // Reload so everyone starts fresh
     toast('✅ Game reset! Reloading...','tgr');
