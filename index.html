@@ -720,26 +720,12 @@ async function doRoll(){
     ts:Date.now()
   };
 
-  // Apply coins locally right now (position set by animation)
-  if(eff.effect==='bank') p.coins=Math.max(0,(p.coins||0)+eff.coins_delta);
-  if(eff.effect==='heist'&&eff.steal_from){
-    const tg=G.players.find(pl=>pl.id===eff.steal_from);
-    if(tg){tg.coins=Math.max(0,tg.coins-eff.steal_amt); p.coins=Math.max(0,(p.coins||0)+eff.steal_amt);}
-  }
-  if(eff.effect==='trap') p.coins=Math.max(0,(p.coins||0)+eff.coins_delta);
-
-  // Push to DB FIRST (broadcast to all others) — position+coins
-  p.pos=to_pos; // set final position before pushing
-  await pushPlayer(p);
-  if(eff.steal_from){
-    const tg=G.players.find(pl=>pl.id===eff.steal_from);
-    if(tg) await pushPlayer(tg);
-  }
+  // Broadcast move to DB — coins NOT applied yet, animation does that
   G.cur++;
   await pushTurn(moveData);
 
-  // Now animate on MY screen (others animate via subscribeGame)
-  p.pos=from_pos; renderBoard(); // reset to from_pos for animation start
+  // Animate on MY screen — applyEffectLocal applies coins ONCE here
+  p.pos=from_pos; renderBoard();
   animDie(roll,()=>{
     callout(p.name+' rolled a '+roll+'! 🎲','move',2500);
     addLog(p.name,'rolled '+roll,'#d4a017');
@@ -747,7 +733,14 @@ async function doRoll(){
     setTimeout(()=>{
       animMove(idx,roll,to_pos,()=>{
         setTimeout(()=>{
+          // Apply coins exactly once here
           applyEffectLocal(eff,idx);
+          // NOW push final coin values to DB
+          pushPlayer(G.players[idx]);
+          if(eff.steal_from){
+            const tg=G.players.find(pl=>pl.id===eff.steal_from);
+            if(tg) pushPlayer(tg);
+          }
           setTimeout(()=>{
             G.busy=false; renderBoard(); renderLB(); setupTurn();
           },1400);
