@@ -271,6 +271,7 @@ input::placeholder{color:#c0b8a8;font-weight:500}
       <div class="leg"><div class="leg-i">⬛</div><div><div class="leg-n">Trap</div><div class="leg-e" style="color:#555">LOSE 4 COINS</div></div></div>
       <div class="leg"><div class="leg-i">⬜</div><div><div class="leg-n">Normal</div><div class="leg-e" style="color:var(--muted)">NOTHING</div></div></div>
     </div>
+    <div class="reset-link" onclick="openReset()">↺ reset game</div>
   </div>
 </div>
 
@@ -285,7 +286,6 @@ input::placeholder{color:#c0b8a8;font-weight:500}
       <button class="btn-cancel" onclick="closeReset()">CANCEL</button>
       <button class="btn-danger" onclick="confirmReset()">RESET GAME</button>
     </div>
-  <div class="reset-link" onclick="openReset()">↺ reset game</div>
   </div>
 </div>
 
@@ -397,14 +397,12 @@ async function joinGame(){
     if(rooms && rooms.length > 0){
       room = rooms[0]; isAdmin = false;
     } else {
-      // Check if there's a playing room — if so, show error
-      const { data: playingRooms } = await sb.from('rooms').select('*').eq('status','playing').limit(1);
+      // Check if there's a playing room — reset it to lobby so new players can join
+      const { data: playingRooms } = await sb.from('rooms').select('*').neq('status','finished').limit(1);
       if(playingRooms && playingRooms.length > 0){
-        showErr('A game is already in progress. Please wait for it to finish.');
-        document.getElementById('join-btn').disabled=false;
-        document.getElementById('join-btn').textContent='JOIN THE HEIST →';
-        return;
-      }
+        // Found a stuck/playing room — treat it as lobby
+        room = playingRooms[0]; isAdmin = false;
+      } else {
       const code = Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[~~(Math.random()*32)]).join('');
       const {data:r,error:re} = await sb.from('rooms').insert({code, status:'lobby'}).select().single();
       if(re) throw re;
