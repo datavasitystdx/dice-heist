@@ -343,150 +343,135 @@ const AVA_DATA=[
   {id:'panda',name:'Panda',img:'data:image/jpeg;base64,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'},
   {id:'hippo',name:'Hippo',img:'data:image/jpeg;base64,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'},
 ];
-const TILES=["safe", "norm", "norm", "bank", "norm", "norm", "heist", "norm", "norm", "bank", "norm", "norm", "heist", "norm", "norm", "bank", "norm", "norm", "heist", "norm", "trap", "bank", "norm", "norm", "heist", "norm", "norm", "bank", "norm", "norm"];
-
-/* ══ CONSTANTS ══ */
-const BSIZE=30, GSECS=600, TSECS=10, MDELAY=420;
+/* ── AGREED RULES ──────────────────────────────────────────
+   Board: 30 tiles, fixed
+   Tile 0        → 🏠 Start (safe, nothing)
+   Tiles 5,10,15,20,25 → 🟩 Bank  (+3 coins)
+   Tiles 8,16,24 → 🟥 Heist (steal 3 coins from player closest ahead; if none, richest player)
+   Tile 13       → ⬛ Trap  (-3 coins)
+   Everything else → ⬜ Normal (nothing)
+   No picker, no freeze, no pending. Instant effects.
+   Position = where you land. Coins/bank/trap don't move you.
+   Push to DB AFTER animation completes.
+───────────────────────────────────────────────────────────── */
+const TILES = [
+  'safe','norm','norm','norm','norm',
+  'bank','norm','norm','heist','norm',
+  'bank','norm','norm','trap','norm',
+  'bank','norm','norm','norm','norm',
+  'norm','norm','norm','norm','norm',
+  'bank','norm','norm','norm','norm'
+];
+const BSIZE=30, GSECS=600, TSECS=10, MDELAY=380;
 const DFACE=['⚀','⚁','⚂','⚃','⚄','⚅'];
 const TM={
-  safe: {ico:'🏠',lbl:'START',   cls:'ts', lc:'#d4a017'},
-  bank: {ico:'🟩',lbl:'+2 COINS',cls:'tb', lc:'#1a9e5a'},
-  heist:{ico:'🟥',lbl:'STEAL 2', cls:'th', lc:'#e03030'},
-  trap: {ico:'⬛',lbl:'-4 COINS',cls:'tt', lc:'#ffffff'},
-  norm: {ico:'⬜',lbl:'NOTHING', cls:'tn2',lc:'#7a7a9a'},
+  safe: {ico:'🏠',lbl:'START',    cls:'ts', lc:'#d4a017'},
+  bank: {ico:'🟩',lbl:'+3 COINS', cls:'tb', lc:'#1a9e5a'},
+  heist:{ico:'🟥',lbl:'STEAL 3',  cls:'th', lc:'#e03030'},
+  trap: {ico:'⬛',lbl:'-3 COINS', cls:'tt', lc:'#ffffff'},
+  norm: {ico:'⬜',lbl:'NOTHING',  cls:'tn2',lc:'#7a7a9a'},
 };
 
-/* ══ STATE ══ */
 let sb, myId, myName, myAvaId, myAvaImg, myRoomId, myRoomCode, isAdmin=false;
+let subs=[], lastMoveTs=0, G_watchdog=null;
 let G={players:[],cur:0,timeLeft:GSECS,gameDur:GSECS,timerStart:null,tiv:null,siv:null,sleft:TSECS,over:false,busy:false};
-let assignedAvas=new Set(), subs=[];
 
-/* ══ INIT SUPABASE ══ */
+/* ══ SUPABASE ══ */
 function initSB(){
-  try{
-    sb = supabase.createClient(SB_URL, SB_KEY, {realtime:{params:{eventsPerSecond:10}}});
-    return true;
-  }catch(e){showErr('Connection failed: '+e.message);return false}
+  try{ sb=supabase.createClient(SB_URL,SB_KEY,{realtime:{params:{eventsPerSecond:10}}}); return true; }
+  catch(e){ showErr('Connection failed: '+e.message); return false; }
 }
 
-/* ══ NAME TYPING → shows avatar immediately ══ */
+/* ══ NAME TYPING ══ */
 function onType(val){
-  const btn=document.getElementById('join-btn');
-  btn.disabled = val.trim().length < 1;
-  if(val.trim().length >= 1){
-    const idx = val.trim().toLowerCase().charCodeAt(0) % AVA_DATA.length;
-    const ava = AVA_DATA[idx];
+  document.getElementById('join-btn').disabled=val.trim().length<1;
+  if(val.trim().length>=1){
+    const idx=val.trim().toLowerCase().charCodeAt(0)%AVA_DATA.length;
+    const ava=AVA_DATA[idx];
     const img=document.getElementById('ava-prev');
-    img.src = ava.img; img.classList.add('set');
-    document.getElementById('ava-lbl').textContent = ava.name.toUpperCase();
-    myAvaId = ava.id; myAvaImg = ava.img;
+    img.src=ava.img; img.classList.add('set');
+    document.getElementById('ava-lbl').textContent=ava.name.toUpperCase();
+    myAvaId=ava.id; myAvaImg=ava.img;
   }
 }
 
-/* ══ JOIN GAME — blocks joining if room is already playing ══ */
+/* ══ JOIN ══ */
 async function joinGame(){
-  const name = document.getElementById('name-inp').value.trim();
+  const name=document.getElementById('name-inp').value.trim();
   if(!name) return;
   if(!initSB()) return;
   showErr('');
-  document.getElementById('join-btn').disabled = true;
-  document.getElementById('join-btn').textContent = 'Joining...';
-  try {
-    let { data: rooms } = await sb.from('rooms').select('*').eq('status','lobby').limit(1);
+  document.getElementById('join-btn').disabled=true;
+  document.getElementById('join-btn').textContent='Joining...';
+  try{
+    let {data:rooms}=await sb.from('rooms').select('*').eq('status','lobby').limit(1);
     let room;
-    if(rooms && rooms.length > 0){
-      room = rooms[0]; isAdmin = false;
-    } else {
-      // No lobby room — create one (this player is admin/host)
-      const code = Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[~~(Math.random()*32)]).join('');
-      const {data:r,error:re} = await sb.from('rooms').insert({code, status:'lobby'}).select().single();
+    if(rooms&&rooms.length>0){ room=rooms[0]; isAdmin=false; }
+    else{
+      const code=Array.from({length:5},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[~~(Math.random()*32)]).join('');
+      const {data:r,error:re}=await sb.from('rooms').insert({code,status:'lobby'}).select().single();
       if(re) throw re;
-      room = r; isAdmin = true;
+      room=r; isAdmin=true;
     }
-    myRoomId = room.id; myRoomCode = room.code;
-    const {data:existing} = await sb.from('players').select('avatar').eq('room_id',room.id);
-    const usedAva = new Set((existing||[]).map(p=>p.avatar));
-    let ava = AVA_DATA.find(a=>a.id===myAvaId && !usedAva.has(a.id));
-    if(!ava) ava = AVA_DATA.find(a=>!usedAva.has(a.id)) || AVA_DATA[~~(Math.random()*AVA_DATA.length)];
-    myAvaId = ava.id; myAvaImg = ava.img; myName = name;
-    const turnOrder = (existing||[]).length;
-    const {data:player,error:pe} = await sb.from('players').insert({
-      room_id: myRoomId, name, avatar: myAvaId,
-      coins:10, position:0, turn_order: turnOrder, is_admin: isAdmin
+    myRoomId=room.id; myRoomCode=room.code;
+    const {data:existing}=await sb.from('players').select('avatar').eq('room_id',room.id);
+    const usedAva=new Set((existing||[]).map(p=>p.avatar));
+    let ava=AVA_DATA.find(a=>a.id===myAvaId&&!usedAva.has(a.id));
+    if(!ava) ava=AVA_DATA.find(a=>!usedAva.has(a.id))||AVA_DATA[~~(Math.random()*AVA_DATA.length)];
+    myAvaId=ava.id; myAvaImg=ava.img; myName=name;
+    const turnOrder=(existing||[]).length;
+    const {data:player,error:pe}=await sb.from('players').insert({
+      room_id:myRoomId,name,avatar:myAvaId,coins:10,position:0,turn_order:turnOrder,is_admin:isAdmin
     }).select().single();
     if(pe) throw pe;
-    myId = player.id;
-    document.getElementById('ava-prev').src = ava.img;
-    document.getElementById('ava-lbl').textContent = ava.name.toUpperCase();
-    document.getElementById('name-card').style.display = 'none';
-    const js = document.getElementById('joined-sec');
-    js.style.display = 'flex'; js.style.flexDirection='column'; js.style.gap='10px';
-    if(isAdmin) document.getElementById('admin-box').style.display = 'block';
-    subscribeRoom();
-    await refreshPlayers();
-  } catch(e) {
+    myId=player.id;
+    document.getElementById('ava-prev').src=ava.img;
+    document.getElementById('ava-lbl').textContent=ava.name.toUpperCase();
+    document.getElementById('name-card').style.display='none';
+    const js=document.getElementById('joined-sec');
+    js.style.display='flex'; js.style.flexDirection='column'; js.style.gap='10px';
+    if(isAdmin) document.getElementById('admin-box').style.display='block';
+    subscribeRoom(); await refreshPlayers();
+  }catch(e){
     showErr('Error: '+(e.message||e));
     document.getElementById('join-btn').disabled=false;
     document.getElementById('join-btn').textContent='JOIN THE HEIST →';
   }
 }
 
-/* ══ REALTIME SUBSCRIPTIONS ══ */
+/* ══ LOBBY SUBSCRIPTION ══ */
 function subscribeRoom(){
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
-  const ch = sb.channel('room-'+myRoomId)
+  const ch=sb.channel('room-'+myRoomId)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'players',filter:'room_id=eq.'+myRoomId},
       ()=>refreshPlayers())
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+myRoomId},
-      p=>{ if(p.new.status==='playing') loadGame(p.new) })
+      p=>{ if(p.new.status==='playing') loadGame(p.new); })
     .subscribe();
   subs.push(ch);
 }
 
-/* ══ GAME SUBSCRIPTION — listens for room updates to sync all screens ══ */
-let lastMoveTs = 0; // track last processed move timestamp to avoid replaying
+/* ══ GAME SUBSCRIPTION ══ */
 function subscribeGame(){
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
-  const ch = sb.channel('game-'+myRoomId)
+  const ch=sb.channel('game-'+myRoomId)
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'rooms',filter:'id=eq.'+myRoomId},
       async p=>{
         if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
-        const newTurn = p.new.current_turn;
-        const mv = p.new.last_move;
-
-        // A move was broadcast — animate it on ALL screens that haven't played it yet
-        if(mv && mv.ts && mv.ts > lastMoveTs){
-          lastMoveTs = mv.ts;
-          G.cur = newTurn;
+        const mv=p.new.last_move;
+        const newTurn=p.new.current_turn;
+        if(mv&&mv.ts&&mv.ts>lastMoveTs){
+          lastMoveTs=mv.ts;
+          G.cur=newTurn;
+          // Only sync coins (never positions mid-animation)
           await syncCoinsOnly();
-
-          if(mv.effect === 'heist_pending'){
-            // Move already animated — just show frozen waiting state
-            // Don't re-animate, just update callout if not already showing
-            if(!G.busy){
-              const mover = G.players.find(p=>p.id===mv.player_id);
-              if(mover) mover.pos = mv.from_pos||0;
-              renderBoard();
-              G.busy = true;
-              await playMoveFromDB(mv);
-            }
-          } else if(mv.effect === 'heist' && G.busy){
-            // This is the heist RESULT after heist_pending — unfreeze and apply
-            G.busy = false;
-            applyEffectObs(mv, G.players.findIndex(p=>p.id===mv.player_id), ()=>{
-              setTimeout(()=>{ G.busy=false; renderBoard(); renderLB(); setupTurn(); },1400);
-            });
-          } else {
-            // Normal move — restore from_pos and animate
-            const mover = G.players.find(p=>p.id===mv.player_id);
-            if(mover) mover.pos = mv.from_pos||0;
-            renderBoard();
-            G.busy = false;
-            await playMoveFromDB(mv);
-          }
-        } else if(!mv || !mv.ts){
-          // Turn changed with no move data (e.g. watchdog skip)
-          G.cur = newTurn;
+          // Set player to from_pos so animation starts correctly
+          const mover=G.players.find(pl=>pl.id===mv.player_id);
+          if(mover) mover.pos=mv.from_pos||0;
+          renderBoard();
+          if(!G.busy) await playMoveFromDB(mv);
+        } else {
+          G.cur=newTurn;
           await syncPlayers();
           setupTurn();
         }
@@ -495,54 +480,50 @@ function subscribeGame(){
   subs.push(ch);
 }
 
+/* ══ REFRESH LOBBY ══ */
 async function refreshPlayers(){
-  const {data} = await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
+  const {data}=await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
   if(!data) return;
   const el=document.getElementById('plist'); el.innerHTML='';
   data.forEach((p,i)=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
     const isMe=p.id===myId, isHost=p.is_admin;
-    const d=document.createElement('div');
-    d.className='jp'+(isHost?' host-row':'');
+    const d=document.createElement('div'); d.className='jp'+(isHost?' host-row':'');
     d.style.animationDelay=(i*.08)+'s';
     d.innerHTML=`<img src="${ava.img}" alt="${p.name}"><div class="jp-info"><div class="jp-name">${p.name}</div></div>${isHost?'<span class="badge host">HOST</span>':''}${isMe?'<span class="badge you">YOU</span>':''}`;
     el.appendChild(d);
   });
-  const n=data.length;
-  document.getElementById('lob-stat').textContent = n===1
-    ? 'Waiting for more players to join...'
-    : `${n} players ready — host can start!`;
+  document.getElementById('lob-stat').textContent=data.length===1
+    ?'Waiting for more players...':data.length+' players ready — host can start!';
 }
 
 /* ══ ADMIN START ══ */
 async function adminStart(){
   const pw=document.getElementById('pw-inp').value.trim();
-  if(pw!==ADMIN_PW){showErr('Wrong password!');return}
-  const {data} = await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
-  if(!data||data.length<1){showErr('Need at least 1 player!');return}
+  if(pw!==ADMIN_PW){showErr('Wrong password!');return;}
+  const {data}=await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
+  if(!data||data.length<1){showErr('Need at least 1 player!');return;}
   await sb.from('rooms').update({
-    status:'playing', current_turn:0, last_move:null,
-    timer_start: new Date().toISOString(), duration_secs: GSECS
+    status:'playing',current_turn:0,last_move:null,
+    timer_start:new Date().toISOString(),duration_secs:GSECS
   }).eq('id',myRoomId);
-  const {data:room} = await sb.from('rooms').select('*').eq('id',myRoomId).single();
+  const {data:room}=await sb.from('rooms').select('*').eq('id',myRoomId).single();
   loadGame(room);
 }
 
 /* ══ LOAD GAME ══ */
 async function loadGame(room){
-  const {data:players} = await sb.from('players').select('*').eq('room_id',room.id).order('turn_order');
+  const {data:players}=await sb.from('players').select('*').eq('room_id',room.id).order('turn_order');
   if(!players) return;
-  G.players = players.map(p=>{
+  G.players=players.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
-    return {...p, img:ava.img, pos:p.position||0};
+    return {...p,img:ava.img,pos:p.position||0,coins:p.coins||0};
   });
-  G.cur = room.current_turn||0;
-  G.over=false; G.busy=false;
-  G.gameDur = room.duration_secs||GSECS;
+  G.cur=room.current_turn||0; G.over=false; G.busy=false;
+  G.gameDur=room.duration_secs||GSECS;
   if(room.timer_start){
-    G.timerStart = new Date(room.timer_start).getTime();
-    const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
-    G.timeLeft=Math.max(0,G.gameDur-elapsed);
+    G.timerStart=new Date(room.timer_start).getTime();
+    G.timeLeft=Math.max(0,G.gameDur-Math.floor((Date.now()-G.timerStart)/1000));
   } else { G.timerStart=Date.now(); G.timeLeft=GSECS; }
   subs.forEach(s=>sb.removeChannel(s)); subs=[];
   subscribeGame();
@@ -551,54 +532,45 @@ async function loadGame(room){
   addLog(null,'🎲 THE HEIST HAS STARTED!','#d4a017');
 }
 
-/* ══ SYNC PLAYERS FROM DB ══ */
+/* ══ SYNC ALL (only when NOT animating) ══ */
 async function syncPlayers(){
-  const {data} = await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
+  const {data}=await sb.from('players').select('*').eq('room_id',myRoomId).order('turn_order');
   if(!data) return;
-  G.players = data.map(p=>{
+  G.players=data.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
-    const existing = G.players.find(ep=>ep.id===p.id);
-    const pos = (G.busy && existing) ? existing.pos : (p.position||0);
-    return {...p, img:ava.img, pos, coins:p.coins||0};
+    const old=G.players.find(ep=>ep.id===p.id);
+    const pos=(G.busy&&old)?old.pos:(p.position||0);
+    return {...p,img:ava.img,pos,coins:p.coins||0};
   });
   renderBoard(); renderLB();
 }
 
-/* ══ SYNC COINS ONLY — safe to call during animation, never touches positions ══ */
+/* ══ SYNC COINS ONLY — never touches positions ══ */
 async function syncCoinsOnly(){
-  const {data} = await sb.from('players').select('id,coins').eq('room_id',myRoomId);
+  const {data}=await sb.from('players').select('id,coins').eq('room_id',myRoomId);
   if(!data) return;
-  data.forEach(d=>{
-    const p=G.players.find(p=>p.id===d.id);
-    if(p) p.coins=d.coins||0;
-  });
+  data.forEach(d=>{const p=G.players.find(p=>p.id===d.id);if(p)p.coins=d.coins||0;});
   renderLB();
 }
 
-/* ══ PUSH STATE ══ */
+/* ══ PUSH ══ */
 async function pushPlayer(p){
-  if(!sb) return;
-  await sb.from('players').update({coins:p.coins, position:p.pos||0}).eq('id',p.id);
+  await sb.from('players').update({coins:p.coins,position:p.pos||0}).eq('id',p.id);
 }
 async function pushTurn(moveData){
-  if(!sb) return;
-  const update = {current_turn:G.cur};
-  if(moveData) update.last_move = moveData;
-  const {error} = await sb.from('rooms').update(update).eq('id',myRoomId);
-  if(error) console.error('pushTurn error:', error);
+  const upd={current_turn:G.cur};
+  if(moveData) upd.last_move=moveData;
+  await sb.from('rooms').update(upd).eq('id',myRoomId);
 }
 
-/* ══ IS MY TURN? ══ */
+/* ══ WHOSE TURN ══ */
 function amIPlaying(){
   if(!G.players.length) return false;
-  const idx=G.cur%G.players.length;
-  return G.players[idx]?.id === myId;
+  return G.players[G.cur%G.players.length]?.id===myId;
 }
-
-/* ══ SYNC CURRENT TURN FROM DB ══ */
 async function syncTurnFromDB(){
-  const {data:room} = await sb.from('rooms').select('current_turn').eq('id',myRoomId).single();
-  if(room && room.current_turn !== undefined) G.cur = room.current_turn;
+  const {data}=await sb.from('rooms').select('current_turn').eq('id',myRoomId).single();
+  if(data) G.cur=data.current_turn;
 }
 
 /* ══ BOARD ══ */
@@ -606,131 +578,206 @@ function buildBoard(){
   const el=document.getElementById('board'); el.innerHTML='';
   TILES.forEach((t,i)=>{
     const m=TM[t]; const d=document.createElement('div');
-    d.className='tile '+m.cls; d.id='ti'+i; d.title='#'+i+' — '+m.lbl;
+    d.className='tile '+m.cls; d.id='ti'+i;
     d.innerHTML=`<span class="tn">${i}</span><span class="tico">${m.ico}</span><span class="tlbl">${m.lbl}</span><div class="pins" id="pins${i}"></div>`;
     el.appendChild(d);
   });
 }
 function renderBoard(){
-  for(let i=0;i<BSIZE;i++){const p=document.getElementById('pins'+i);if(p)p.innerHTML=''}
+  for(let i=0;i<BSIZE;i++){const p=document.getElementById('pins'+i);if(p)p.innerHTML='';}
   G.players.forEach(p=>{
-    const c=document.getElementById('pins'+(p.pos||0)); if(!c)return;
+    const c=document.getElementById('pins'+(p.pos||0)); if(!c) return;
     const img=document.createElement('img'); img.className='pin';
     img.src=p.img; img.title=p.name; c.appendChild(img);
   });
 }
 
-/* ══ ANIMATED MOVE (used by both roller AND observers) ══ */
+/* ══ ANIMATE MOVE — tile by tile ══ */
 function animMove(pi,steps,finalPos,cb){
   const p=G.players[pi]; let cur=p.pos||0; let step=0;
-  function next(){
+  function hop(){
     if(step>=steps){
       p.pos=finalPos; renderBoard();
       const te=document.getElementById('ti'+finalPos);
-      if(te){te.classList.add('ping');setTimeout(()=>te.classList.remove('ping'),500)}
-      setTimeout(cb,350); return;
+      if(te){te.classList.add('ping');setTimeout(()=>te.classList.remove('ping'),500);}
+      setTimeout(cb,300); return;
     }
     cur=(cur+1)%BSIZE; p.pos=cur; renderBoard();
     const c=document.getElementById('pins'+cur);
     if(c&&c.firstChild) c.firstChild.classList.add('hop');
-    step++; setTimeout(next,MDELAY);
+    step++; setTimeout(hop,MDELAY);
   }
-  next();
+  hop();
 }
 
-/* ══ PLAY MOVE FROM DB — runs on ALL devices including the roller ══ */
-async function playMoveFromDB(mv){
-  // Always reset busy and run — the subscribeGame already reset it before calling us
-  G.busy=true;
+/* ══ CALCULATE EFFECT (pure, no animation, no DB) ══ */
+function calcEffect(p,pi,newPos){
+  const t=TILES[newPos];
+  if(t==='bank'){
+    return {effect:'bank',coins_delta:3,steal_from:null,steal_amt:0};
+  }
+  if(t==='heist'){
+    // Steal from player closest AHEAD on board; if tied/none, richest
+    const others=G.players.filter((_,i)=>i!==pi);
+    if(!others.length) return {effect:'heist_no_target',coins_delta:0,steal_from:null,steal_amt:0};
+    // Find who is closest ahead
+    let target=null;
+    let minDist=BSIZE+1;
+    others.forEach(o=>{
+      const dist=((o.pos-newPos)+BSIZE)%BSIZE;
+      if(dist>0&&dist<minDist){minDist=dist;target=o;}
+    });
+    // If nobody ahead, take richest
+    if(!target) target=others.reduce((a,b)=>((b.coins||0)>(a.coins||0)?b:a));
+    const amt=Math.min(3,target.coins||0);
+    return {effect:'heist',coins_delta:amt,steal_from:target.id,steal_amt:amt};
+  }
+  if(t==='trap'){
+    const loss=Math.min(3,p.coins||0);
+    return {effect:'trap',coins_delta:-loss,steal_from:null,steal_amt:loss};
+  }
+  return {effect:t==='safe'?'safe':'norm',coins_delta:0,steal_from:null,steal_amt:0};
+}
 
+/* ══ APPLY EFFECT LOCALLY ══ */
+function applyEffectLocal(eff,pi){
+  const p=G.players[pi];
+  if(eff.effect==='bank'){
+    p.coins=Math.max(0,(p.coins||0)+eff.coins_delta);
+    callout('🟩 BANK! '+p.name+' collects +3 coins!','bank',3000);
+    toast('+3 COINS!','tgr'); addLog(p.name,'🟩 Bank! +3 coins','#1a9e5a');
+    flash('rgba(26,158,90,.2)'); burst(3,true);
+  } else if(eff.effect==='heist'&&eff.steal_from){
+    const tg=G.players.find(pl=>pl.id===eff.steal_from);
+    if(tg){tg.coins=Math.max(0,tg.coins-eff.steal_amt); p.coins=Math.max(0,(p.coins||0)+eff.steal_amt);}
+    callout('🟥 HEIST! '+p.name+' stole '+eff.steal_amt+' coins from '+(tg?tg.name:'someone')+'!','heist',3500);
+    toast('💰 HEIST! Stole '+eff.steal_amt,'tr');
+    addLog(p.name,'🟥 Heist! Stole '+eff.steal_amt+' from '+(tg?tg.name:'?'),'#e03030');
+    flash('rgba(224,48,48,.18)'); burst(eff.steal_amt,false);
+  } else if(eff.effect==='heist_no_target'){
+    callout('🟥 HEIST — no one to rob!','heist',2500);
+    addLog(p.name,'🟥 Heist — no targets','#e03030');
+  } else if(eff.effect==='trap'){
+    p.coins=Math.max(0,(p.coins||0)-eff.steal_amt);
+    callout('⬛ TRAP! '+p.name+' loses '+eff.steal_amt+' coins!','trap',3500);
+    toast('⬛ TRAP! -'+eff.steal_amt+' COINS','tb2');
+    addLog(p.name,'⬛ Trap! Lost '+eff.steal_amt+' coins','#ff4444');
+    flash('rgba(0,0,0,.25)');
+  } else if(eff.effect!=='safe'){
+    callout('⬜ Normal tile — nothing happens','norm',2000);
+    addLog(p.name,'normal tile','#7a7a9a');
+  }
+  renderLB();
+}
+
+/* ══ PLAY MOVE FROM DB — runs on ALL devices ══ */
+async function playMoveFromDB(mv){
+  G.busy=true;
   const pi=G.players.findIndex(p=>p.id===mv.player_id);
   if(pi<0){G.busy=false;setupTurn();return;}
   const p=G.players[pi];
+  p.pos=mv.from_pos||0; renderBoard();
 
-  // Reset player position to from_pos so animation starts correctly
-  p.pos=mv.from_pos||0;
-  renderBoard();
-
-  animDieObs(mv.roll,()=>{
+  animDie(mv.roll,()=>{
     callout(p.name+' rolled a '+mv.roll+'! 🎲','move',2500);
-    addLog(p.name,'rolled a '+mv.roll,'#d4a017');
-    if(mv.looped){callout(p.name+' looped the board! 🔄','move',2000);}
-
+    addLog(p.name,'rolled '+mv.roll,'#d4a017');
+    if(mv.looped) callout(p.name+' looped the board! 🔄','move',1800);
     setTimeout(()=>{
       animMove(pi,mv.roll,mv.to_pos,()=>{
         setTimeout(()=>{
-          applyEffectObs(mv,pi,()=>{
-            setTimeout(()=>{
-              G.busy=false;
-              renderBoard(); renderLB();
-              setupTurn();
-            },1400);
-          });
-        },500);
+          applyEffectLocal(mv,pi);
+          setTimeout(()=>{
+            G.busy=false; renderBoard(); renderLB(); setupTurn();
+          },1400);
+        },400);
       });
-    },1300);
+    },1200);
   });
 }
 
-/* ══ Die animation for observer (shows result directly) ══ */
-function animDieObs(res,cb){
-  const el=document.getElementById('die'); el.classList.add('spin'); let t=0;
-  const iv=setInterval(()=>{el.textContent=DFACE[~~(Math.random()*6)];if(++t>14){clearInterval(iv);el.classList.remove('spin');el.textContent=DFACE[res-1];cb()}},65);
+/* ══ ROLL ══ */
+async function doRoll(){
+  if(G.siv) clearInterval(G.siv);
+  if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
+  if(G.busy||!amIPlaying()) return;
+  G.busy=true;
+  document.getElementById('rbtn').disabled=true;
+  document.getElementById('dp').classList.remove('on');
+  document.getElementById('dp-sub').classList.remove('on');
+  document.getElementById('dp-sec').textContent='—';
+  clearCB();
+
+  const roll=~~(Math.random()*6)+1;
+  const idx=G.cur%G.players.length; const p=G.players[idx];
+  const from_pos=p.pos||0;
+  const raw=from_pos+roll; const to_pos=raw%BSIZE; const looped=raw>=BSIZE;
+
+  // Calculate effect
+  const eff=calcEffect(p,idx,to_pos);
+
+  // Build move data for DB broadcast
+  const moveData={
+    player_id:p.id, roll, from_pos, to_pos, looped,
+    effect:eff.effect, steal_from:eff.steal_from||null,
+    steal_amt:eff.steal_amt||0, coins_delta:eff.coins_delta||0,
+    ts:Date.now()
+  };
+
+  // Apply coins locally right now (position set by animation)
+  if(eff.effect==='bank') p.coins=Math.max(0,(p.coins||0)+eff.coins_delta);
+  if(eff.effect==='heist'&&eff.steal_from){
+    const tg=G.players.find(pl=>pl.id===eff.steal_from);
+    if(tg){tg.coins=Math.max(0,tg.coins-eff.steal_amt); p.coins=Math.max(0,(p.coins||0)+eff.steal_amt);}
+  }
+  if(eff.effect==='trap') p.coins=Math.max(0,(p.coins||0)+eff.coins_delta);
+
+  // Push to DB FIRST (broadcast to all others) — position+coins
+  p.pos=to_pos; // set final position before pushing
+  await pushPlayer(p);
+  if(eff.steal_from){
+    const tg=G.players.find(pl=>pl.id===eff.steal_from);
+    if(tg) await pushPlayer(tg);
+  }
+  G.cur++;
+  await pushTurn(moveData);
+
+  // Now animate on MY screen (others animate via subscribeGame)
+  p.pos=from_pos; renderBoard(); // reset to from_pos for animation start
+  animDie(roll,()=>{
+    callout(p.name+' rolled a '+roll+'! 🎲','move',2500);
+    addLog(p.name,'rolled '+roll,'#d4a017');
+    if(looped) callout(p.name+' looped the board! 🔄','move',1800);
+    setTimeout(()=>{
+      animMove(idx,roll,to_pos,()=>{
+        setTimeout(()=>{
+          applyEffectLocal(eff,idx);
+          setTimeout(()=>{
+            G.busy=false; renderBoard(); renderLB(); setupTurn();
+          },1400);
+        },400);
+      });
+    },1200);
+  });
 }
 
-/* ══ Apply effect from DB data (for observers) ══ */
-function applyEffectObs(mv,pi,done){
-  const p=G.players[pi];
-  if(mv.effect==='bank'){
-    p.coins=Math.max(0,(p.coins||0)+2);
-    callout('🟩 BANK! '+p.name+' collects +2 coins!','bank',3200);
-    toast('+2 COINS!','tgr'); addLog(p.name,'landed on 🟩 Bank! +2 coins','#1a9e5a');
-    flash('rgba(26,158,90,.2)'); burst(2,true); renderLB(); done(); return;
-  }
-  if(mv.effect==='heist'&&mv.steal_from){
-    const tg=G.players.find(p=>p.id===mv.steal_from);
-    if(tg){
-      tg.coins=Math.max(0,tg.coins-(mv.steal_amt||0));
-      p.coins=Math.max(0,(p.coins||0)+(mv.steal_amt||0));
-    }
-    callout('🟥 HEIST! '+p.name+' stole '+(mv.steal_amt||0)+' coins!','heist',3500);
-    toast('💰 '+p.name+' robbed someone!','tr');
-    addLog(p.name,'💰 HEIST! Stole '+(mv.steal_amt||0)+' coins!','#e03030');
-    flash('rgba(224,48,48,.18)'); burst(mv.steal_amt||0,false); renderLB(); done(); return;
-  }
-  if(mv.effect==='heist_pending'){
-    // Roller is picking a target — freeze observers with waiting message
-    callout('🟥 HEIST! '+p.name+' is choosing who to rob...','heist',12000);
-    addLog(p.name,'deciding who to rob...','#e03030');
-    // Don't call done() — stay frozen, next update will have the real heist result
-    return;
-  }
-  if(mv.effect==='heist_no_target'){
-    callout('🟥 HEIST — no one to rob!','heist',2500);
-    addLog(p.name,'Heist — no targets!','#e03030'); done(); return;
-  }
-  if(mv.effect==='trap'){
-    const loss=mv.steal_amt||0;
-    p.coins=Math.max(0,(p.coins||0)-loss);
-    callout('⬛ TRAP! '+p.name+' loses '+loss+' coins!','trap',3500);
-    toast('⬛ TRAP! -'+loss+' COINS','tb2');
-    addLog(p.name,'hit ⬛ Trap! Lost '+loss+' coins','#ff4444');
-    flash('rgba(0,0,0,.25)'); renderLB(); done(); return;
-  }
-  if(mv.effect!=='safe'){callout('⬜ '+p.name+' — Normal tile, nothing happens','norm',2500);addLog(p.name,'normal tile — nothing happens','#7a7a9a');}
-  done();
+/* ══ DIE ANIMATION ══ */
+function animDie(res,cb){
+  const el=document.getElementById('die'); el.classList.add('spin'); let t=0;
+  const iv=setInterval(()=>{
+    el.textContent=DFACE[~~(Math.random()*6)];
+    if(++t>14){clearInterval(iv);el.classList.remove('spin');el.textContent=DFACE[res-1];cb();}
+  },65);
 }
 
 /* ══ TIMER ══ */
 function startTimer(){
-  if(G.tiv)clearInterval(G.tiv);
+  if(G.tiv) clearInterval(G.tiv);
   G.tiv=setInterval(()=>{
     if(G.timerStart){
-      const elapsed=Math.floor((Date.now()-G.timerStart)/1000);
-      G.timeLeft=Math.max(0,G.gameDur-elapsed);
+      G.timeLeft=Math.max(0,G.gameDur-Math.floor((Date.now()-G.timerStart)/1000));
     } else G.timeLeft=Math.max(0,G.timeLeft-1);
     drawTimer();
-    if(G.timeLeft<=0){clearInterval(G.tiv);endGame()}
+    if(G.timeLeft<=0){clearInterval(G.tiv);endGame();}
   },1000);
 }
 function drawTimer(){
@@ -744,11 +791,10 @@ function drawTimer(){
 }
 
 /* ══ TURN SETUP ══ */
-let G_watchdog=null;
 async function setupTurn(){
-  if(G.over||G.busy)return;
+  if(G.over||G.busy) return;
   await syncTurnFromDB();
-  const idx=G.cur%G.players.length; const p=G.players[idx]; if(!p)return;
+  const idx=G.cur%G.players.length; const p=G.players[idx]; if(!p) return;
   document.getElementById('hpanel').classList.remove('on');
   document.getElementById('dp-img').src=p.img;
   document.getElementById('dp-nm').textContent=p.name;
@@ -758,28 +804,25 @@ async function setupTurn(){
   document.getElementById('dp-sub').classList.toggle('on',myTurn);
   document.getElementById('rbtn').disabled=!myTurn;
   showAnnounce(p,myTurn);
-  if(G_watchdog)clearTimeout(G_watchdog);
+  if(G_watchdog) clearTimeout(G_watchdog);
   if(myTurn){
     startSec();
   } else {
-    if(G.siv)clearInterval(G.siv);
+    if(G.siv) clearInterval(G.siv);
     document.getElementById('dp-sec').textContent='—';
-    // Watchdog: if active player doesn't roll in time, force advance
     G_watchdog=setTimeout(async()=>{
       if(!G.busy&&!G.over&&!amIPlaying()){
         G.busy=false; G.cur++;
-        renderBoard(); renderLB();
-        await pushTurn(null);
-        setupTurn();
+        await pushTurn(null); setupTurn();
       }
-    },(TSECS+5)*1000);
+    },(TSECS+6)*1000);
   }
   renderLB();
 }
 function startSec(){
   G.sleft=TSECS; drawSec();
-  if(G.siv)clearInterval(G.siv);
-  G.siv=setInterval(()=>{G.sleft--;drawSec();if(G.sleft<=0){clearInterval(G.siv);doRoll()}},1000);
+  if(G.siv) clearInterval(G.siv);
+  G.siv=setInterval(()=>{G.sleft--;drawSec();if(G.sleft<=0){clearInterval(G.siv);doRoll();}},1000);
 }
 function drawSec(){
   const el=document.getElementById('dp-sec'); el.textContent=G.sleft;
@@ -794,7 +837,7 @@ function showAnnounce(p,isMyTurn){
   document.getElementById('ta-eye').textContent=isMyTurn?"IT'S YOUR TURN!":"UP NEXT";
   document.getElementById('ta-ac').textContent=isMyTurn?'ROLL THE DICE!':p.name+' is rolling...';
   const el=document.getElementById('ta'); el.classList.add('on');
-  if(taT)clearTimeout(taT); taT=setTimeout(()=>el.classList.remove('on'),2400);
+  if(taT) clearTimeout(taT); taT=setTimeout(()=>el.classList.remove('on'),2400);
 }
 
 /* ══ CALLOUT ══ */
@@ -803,173 +846,16 @@ function callout(txt,type,ms=3000){
   const w=document.getElementById('cb-wrap'); w.innerHTML='';
   const d=document.createElement('div'); d.className='cb '+(type||'norm'); d.textContent=txt;
   w.appendChild(d);
-  if(cbT)clearTimeout(cbT);
-  cbT=setTimeout(()=>{d.style.opacity='0';setTimeout(()=>w.innerHTML='',400)},ms);
+  if(cbT) clearTimeout(cbT);
+  cbT=setTimeout(()=>{d.style.opacity='0';setTimeout(()=>w.innerHTML='',400);},ms);
 }
-function clearCB(){document.getElementById('cb-wrap').innerHTML='';if(cbT)clearTimeout(cbT)}
-
-/* ══ ROLL — roller pushes move to DB, then realtime triggers animation for ALL ══ */
-async function doRoll(){
-  if(G.siv)clearInterval(G.siv);
-  if(G_watchdog){clearTimeout(G_watchdog);G_watchdog=null;}
-  if(G.busy||!amIPlaying())return;
-  G.busy=true;
-  document.getElementById('rbtn').disabled=true;
-  document.getElementById('dp').classList.remove('on');
-  document.getElementById('dp-sub').classList.remove('on');
-  document.getElementById('dp-sec').textContent='—';
-  clearCB();
-
-  const roll=~~(Math.random()*6)+1;
-  const idx=G.cur%G.players.length; const p=G.players[idx];
-  const raw=(p.pos||0)+roll; const newPos=raw%BSIZE;
-  const looped=raw>=BSIZE;
-
-  // Calculate effect before pushing
-  const moveData = await calcMoveData(p,idx,roll,newPos,looped);
-
-  // Push everything to DB in one go — realtime fires for ALL devices
-  await pushPlayer(G.players[idx]);
-  if(moveData.steal_from){
-    const victim=G.players.find(pl=>pl.id===moveData.steal_from);
-    if(victim) await pushPlayer(victim);
-  }
-  G.cur++;
-  await pushTurn(moveData);
-  // G.busy stays true — the realtime event will call playMoveFromDB which resets it
-}
-
-/* ══ CALCULATE MOVE RESULT (no animation, just data) ══ */
-async function calcMoveData(p,idx,roll,newPos,looped){
-  const base={player_id:p.id,roll,from_pos:p.pos,to_pos:newPos,looped,ts:Date.now()};
-  const t=TILES[newPos];
-  if(t==='bank'){
-    G.players[idx].coins=Math.max(0,(p.coins||0)+2);
-    return {...base,effect:'bank'};
-  }
-  if(t==='heist'){
-    const tgts=G.players.filter((_,i)=>i!==idx&&(_.coins||0)>0);
-    if(!tgts.length) return {...base,effect:'heist_no_target'};
-    // Show heist picker — returns a promise
-    return new Promise(resolve=>{
-      showHPickerAsync(idx,tgts,(tg,amt)=>{
-        G.players[idx].coins=Math.max(0,(p.coins||0)+amt);
-        tg.coins=Math.max(0,tg.coins-amt);
-        resolve({...base,effect:'heist',steal_from:tg.id,steal_amt:amt});
-      });
-    });
-  }
-  if(t==='trap'){
-    const loss=Math.min(4,p.coins||0);
-    G.players[idx].coins=Math.max(0,(p.coins||0)-loss);
-    return {...base,effect:'trap',steal_amt:loss};
-  }
-  return {...base,effect:t==='safe'?'safe':'norm'};
-}
-
-function showHPickerAsync(pi,tgts,done){
-  const g=document.getElementById('hp-g'); g.innerHTML='';
-  tgts.forEach(tg=>{
-    const b=document.createElement('div'); b.className='hpc';
-    b.innerHTML=`<img src="${tg.img}" alt="${tg.name}"><div class="hpc-n">${tg.name}</div><div class="hpc-c">${tg.coins||0} 🪙</div>`;
-    b.onclick=()=>{
-      document.getElementById('hpanel').classList.remove('on');
-      const amt=Math.min(2,tg.coins||0);
-      done(tg,amt);
-    };
-    g.appendChild(b);
-  });
-  document.getElementById('hpanel').classList.add('on');
-}
-
-/* ══ TILE EFFECTS (roller's screen) ══ */
-function applyEffect(pi,roll,newPos,looped,done){
-  const p=G.players[pi]; const t=TILES[newPos];
-  const base={player_id:p.id,roll,from_pos:p.pos,to_pos:newPos,looped,ts:Date.now()};
-
-  if(t==='bank'){
-    p.coins=Math.max(0,(p.coins||0)+2);
-    callout('🟩 BANK! '+p.name+' collects +2 coins!','bank',3200);
-    toast('+2 COINS!','tgr'); addLog(p.name,'landed on 🟩 Bank! +2 coins','#1a9e5a');
-    flash('rgba(26,158,90,.2)'); burst(2,true); renderLB();
-    done({...base,effect:'bank'}); return;
-  }
-  if(t==='heist'){
-    const tgts=G.players.filter((_,i)=>i!==pi&&(_.coins||0)>0);
-    if(!tgts.length){
-      callout('🟥 HEIST — no one to rob!','heist',2500);
-      addLog(p.name,'Heist — no targets!','#e03030');
-      done({...base,effect:'heist_no_target'}); return;
-    }
-    // Push heist_pending NOW so all other screens freeze and show waiting message
-    pushTurn({...base,effect:'heist_pending'});
-    callout('🟥 HEIST! '+p.name+' — pick your target! (10s)','heist',10000);
-    flash('rgba(224,48,48,.12)');
-    showHPicker(pi,tgts,(tg,amt)=>{
-      done({...base,effect:'heist',steal_from:tg.id,steal_amt:amt});
-    }); return;
-  }
-  if(t==='trap'){
-    const loss=Math.min(4,p.coins||0);
-    p.coins=Math.max(0,(p.coins||0)-4);
-    callout('⬛ TRAP! '+p.name+' loses '+loss+' coins!','trap',3500);
-    toast('⬛ TRAP! -'+loss+' COINS','tb2');
-    addLog(p.name,'hit ⬛ Trap! Lost '+loss+' coins','#ff4444');
-    flash('rgba(0,0,0,.25)'); renderLB();
-    done({...base,effect:'trap',steal_amt:loss}); return;
-  }
-  if(t!=='safe'){callout('⬜ '+p.name+' — Normal tile, nothing happens','norm',2500);addLog(p.name,'normal tile — nothing happens','#7a7a9a');}
-  done({...base,effect:'norm'});
-}
-
-function showHPicker(pi,tgts,done){
-  const g=document.getElementById('hp-g'); g.innerHTML='';
-  let picked=false;
-  // Auto-pick random target after 10 seconds
-  const autoT=setTimeout(()=>{
-    if(!picked){
-      picked=true;
-      document.getElementById('hpanel').classList.remove('on'); clearCB();
-      const tg=tgts[~~(Math.random()*tgts.length)];
-      const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
-      tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
-      callout('🟥 HEIST! '+p.name+' auto-robbed '+tg.name+'!','heist',3500);
-      toast('💰 '+p.name+' robbed '+tg.name+'!','tr');
-      addLog(p.name,'💰 HEIST! Auto-stole '+amt+' from '+tg.name+'!','#e03030');
-      flash('rgba(224,48,48,.18)'); burst(amt,false); renderLB();
-      done(tg,amt);
-    }
-  },10000);
-  tgts.forEach(tg=>{
-    const b=document.createElement('div'); b.className='hpc';
-    b.innerHTML=`<img src="${tg.img}" alt="${tg.name}"><div class="hpc-n">${tg.name}</div><div class="hpc-c">${tg.coins||0} 🪙</div>`;
-    b.onclick=()=>{
-      if(picked)return; picked=true; clearTimeout(autoT);
-      document.getElementById('hpanel').classList.remove('on'); clearCB();
-      const p=G.players[pi]; const amt=Math.min(2,tg.coins||0);
-      tg.coins=Math.max(0,tg.coins-amt); p.coins=Math.max(0,(p.coins||0)+amt);
-      callout('🟥 HEIST! '+p.name+' stole '+amt+' coins from '+tg.name+'!','heist',3500);
-      toast('💰 '+p.name+' robbed '+tg.name+'!','tr');
-      addLog(p.name,'💰 HEIST! Stole '+amt+' from '+tg.name+'!','#e03030');
-      flash('rgba(224,48,48,.18)'); burst(amt,false); renderLB();
-      done(tg,amt);
-    };
-    g.appendChild(b);
-  });
-  document.getElementById('hpanel').classList.add('on');
-}
-
-/* ══ DIE ANIM ══ */
-function animDie(res,cb){
-  const el=document.getElementById('die'); el.classList.add('spin'); let t=0;
-  const iv=setInterval(()=>{el.textContent=DFACE[~~(Math.random()*6)];if(++t>14){clearInterval(iv);el.classList.remove('spin');el.textContent=DFACE[res-1];cb()}},65);
-}
+function clearCB(){document.getElementById('cb-wrap').innerHTML='';if(cbT)clearTimeout(cbT);}
 
 /* ══ LEADERBOARD ══ */
 function renderLB(){
-  const sorted=[...G.players].map((p,i)=>({...p,_i:i})).sort((a,b)=>b.coins-a.coins);
+  const sorted=[...G.players].sort((a,b)=>b.coins-a.coins);
   const el=document.getElementById('lb'); el.innerHTML='';
-  const rc=['r1','r2','r3']; const ci=G.cur%G.players.length;
+  const rc=['r1','r2','r3']; const ci=G.cur%Math.max(1,G.players.length);
   sorted.forEach((p,ri)=>{
     const isC=G.players[ci]?.id===p.id; const tile=TM[TILES[p.pos||0]];
     const isMe=p.id===myId;
@@ -984,72 +870,61 @@ function addLog(who,txt,c){
   const el=document.getElementById('log');
   const d=document.createElement('div'); d.className='lgi';
   d.innerHTML=`<div class="lgd" style="background:${c||'#7a7a9a'}"></div><div>${who?`<span class="lgw">${who} </span>`:''}${txt}</div>`;
-  el.insertBefore(d,el.firstChild); if(el.children.length>60)el.lastChild.remove();
+  el.insertBefore(d,el.firstChild); if(el.children.length>60) el.lastChild.remove();
 }
 
 /* ══ FX ══ */
-function burst(n,pos){for(let i=0;i<Math.min(n*3,10);i++){const el=document.createElement('div');el.className='coin';el.textContent=pos?'🪙':'💸';el.style.left=(60+Math.random()*(innerWidth-120))+'px';el.style.top=(innerHeight*.45)+'px';el.style.setProperty('--tx',(Math.random()-.5)*240+'px');el.style.setProperty('--ty',(-80-Math.random()*180)+'px');el.style.animationDelay=(i*60)+'ms';document.body.appendChild(el);setTimeout(()=>el.remove(),1400)}}
-function toast(txt,type){const el=document.createElement('div');el.className='toast '+type;el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),3000)}
-function flash(c){const el=document.createElement('div');el.className='flash';el.style.background=c;document.body.appendChild(el);setTimeout(()=>el.remove(),800)}
+function burst(n,pos){for(let i=0;i<Math.min(n*3,10);i++){const el=document.createElement('div');el.className='coin';el.textContent=pos?'🪙':'💸';el.style.left=(60+Math.random()*(innerWidth-120))+'px';el.style.top=(innerHeight*.45)+'px';el.style.setProperty('--tx',(Math.random()-.5)*240+'px');el.style.setProperty('--ty',(-80-Math.random()*180)+'px');el.style.animationDelay=(i*60)+'ms';document.body.appendChild(el);setTimeout(()=>el.remove(),1400);}}
+function toast(txt,type){const el=document.createElement('div');el.className='toast '+type;el.textContent=txt;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);}
+function flash(c){const el=document.createElement('div');el.className='flash';el.style.background=c;document.body.appendChild(el);setTimeout(()=>el.remove(),800);}
 
 /* ══ END GAME ══ */
 function endGame(){
-  if(G.over)return; G.over=true;
-  if(G.tiv)clearInterval(G.tiv); if(G.siv)clearInterval(G.siv);
-  if(G_watchdog)clearTimeout(G_watchdog);
-  if(sb) sb.from('rooms').update({status:'finished'}).eq('id',myRoomId);
+  if(G.over) return; G.over=true;
+  if(G.tiv) clearInterval(G.tiv); if(G.siv) clearInterval(G.siv);
+  if(G_watchdog) clearTimeout(G_watchdog);
+  sb.from('rooms').update({status:'finished'}).eq('id',myRoomId);
   clearCB(); document.getElementById('ta').classList.remove('on');
-  document.getElementById('hpanel').classList.remove('on');
   const s=[...G.players].sort((a,b)=>b.coins-a.coins); const w=s[0];
   document.getElementById('r-img').src=w.img;
   document.getElementById('r-nm').textContent=w.name;
   document.getElementById('r-c').textContent=w.coins+' coins';
   const pod=document.getElementById('podium'); pod.innerHTML='';
-  ['🥇','🥈','🥉'].forEach((m,i)=>{if(!s[i])return;const d=document.createElement('div');d.className='pod';d.innerHTML=`<div class="pod-m">${m}</div><img class="pod-img" src="${s[i].img}" alt="${s[i].name}"><div class="pod-n">${s[i].name}</div><div class="pod-c">${s[i].coins||0}🪙</div>`;pod.appendChild(d)});
+  ['🥇','🥈','🥉'].forEach((m,i)=>{if(!s[i])return;const d=document.createElement('div');d.className='pod';d.innerHTML=`<div class="pod-m">${m}</div><img class="pod-img" src="${s[i].img}" alt="${s[i].name}"><div class="pod-n">${s[i].name}</div><div class="pod-c">${s[i].coins||0}🪙</div>`;pod.appendChild(d);});
   scr('s-result'); burst(14,true);
 }
 
-/* ══ UTILS ══ */
-function scr(n){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(n).classList.add('on')}
-function showErr(m){const e=document.getElementById('lob-err');e.textContent=m;e.style.display=m?'block':'none'}
-function quitGame(){if(confirm('Quit?')){if(G.tiv)clearInterval(G.tiv);if(G.siv)clearInterval(G.siv);if(G_watchdog)clearTimeout(G_watchdog);location.reload()}}
-
-/* ══ RESET GAME ══ */
+/* ══ RESET ══ */
 function openReset(){
   document.getElementById('reset-pw').value='';
   document.getElementById('reset-err').style.display='none';
   document.getElementById('reset-modal').classList.add('on');
   setTimeout(()=>document.getElementById('reset-pw').focus(),100);
 }
-function closeReset(){
-  document.getElementById('reset-modal').classList.remove('on');
-}
+function closeReset(){ document.getElementById('reset-modal').classList.remove('on'); }
 async function confirmReset(){
   const pw=document.getElementById('reset-pw').value.trim();
   if(pw!==ADMIN_PW){
-    const e=document.getElementById('reset-err');
-    e.textContent='Wrong password!';e.style.display='block';return;
+    const e=document.getElementById('reset-err'); e.textContent='Wrong password!'; e.style.display='block'; return;
   }
-  // Init supabase if not already
   if(!sb) initSB();
+  const btn=document.querySelector('.btn-danger');
+  btn.textContent='Resetting...'; btn.disabled=true;
   try{
-    const btn=document.querySelector('.btn-danger');
-    btn.textContent='Resetting...'; btn.disabled=true;
-    // Delete all players first, then all rooms
-    // Delete all players then all rooms
     await sb.from('players').delete().gte('turn_order',0);
     await sb.from('rooms').delete().in('status',['lobby','playing','finished']);
-    closeReset();
-    // Reload so everyone starts fresh
-    toast('✅ Game reset! Reloading...','tgr');
+    closeReset(); toast('✅ Game reset! Reloading...','tgr');
     setTimeout(()=>location.reload(),1500);
   }catch(e){
-    const err=document.getElementById('reset-err');
-    err.textContent='Reset failed: '+e.message;err.style.display='block';
-    document.querySelector('.btn-danger').textContent='RESET GAME';
-    document.querySelector('.btn-danger').disabled=false;
+    const err=document.getElementById('reset-err'); err.textContent='Failed: '+e.message; err.style.display='block';
+    btn.textContent='RESET GAME'; btn.disabled=false;
   }
 }
+
+/* ══ UTILS ══ */
+function scr(n){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(n).classList.add('on');}
+function showErr(m){const e=document.getElementById('lob-err');e.textContent=m;e.style.display=m?'block':'none';}
+function quitGame(){if(confirm('Quit?')){if(G.tiv)clearInterval(G.tiv);if(G.siv)clearInterval(G.siv);if(G_watchdog)clearTimeout(G_watchdog);location.reload();}}
 </script>
 </body>
 </html>
