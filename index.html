@@ -458,9 +458,32 @@ function subscribeGame(){
         if(mv && mv.ts && mv.ts > lastMoveTs){
           lastMoveTs = mv.ts;
           G.cur = newTurn;
-          await syncPlayers();
-          // Everyone animates — roller and observers alike
-          G.busy = false; await playMoveFromDB(mv);
+          await syncCoinsOnly();
+
+          if(mv.effect === 'heist_pending'){
+            // Move already animated — just show frozen waiting state
+            // Don't re-animate, just update callout if not already showing
+            if(!G.busy){
+              const mover = G.players.find(p=>p.id===mv.player_id);
+              if(mover) mover.pos = mv.from_pos||0;
+              renderBoard();
+              G.busy = true;
+              await playMoveFromDB(mv);
+            }
+          } else if(mv.effect === 'heist' && G.busy){
+            // This is the heist RESULT after heist_pending — unfreeze and apply
+            G.busy = false;
+            applyEffectObs(mv, G.players.findIndex(p=>p.id===mv.player_id), ()=>{
+              setTimeout(()=>{ G.busy=false; renderBoard(); renderLB(); setupTurn(); },1400);
+            });
+          } else {
+            // Normal move — restore from_pos and animate
+            const mover = G.players.find(p=>p.id===mv.player_id);
+            if(mover) mover.pos = mv.from_pos||0;
+            renderBoard();
+            G.busy = false;
+            await playMoveFromDB(mv);
+          }
         } else if(!mv || !mv.ts){
           // Turn changed with no move data (e.g. watchdog skip)
           G.cur = newTurn;
@@ -534,12 +557,22 @@ async function syncPlayers(){
   if(!data) return;
   G.players = data.map(p=>{
     const ava=AVA_DATA.find(a=>a.id===p.avatar)||AVA_DATA[0];
-    // Keep current animated position if we are mid-animation (busy)
     const existing = G.players.find(ep=>ep.id===p.id);
     const pos = (G.busy && existing) ? existing.pos : (p.position||0);
     return {...p, img:ava.img, pos, coins:p.coins||0};
   });
   renderBoard(); renderLB();
+}
+
+/* ══ SYNC COINS ONLY — safe to call during animation, never touches positions ══ */
+async function syncCoinsOnly(){
+  const {data} = await sb.from('players').select('id,coins').eq('room_id',myRoomId);
+  if(!data) return;
+  data.forEach(d=>{
+    const p=G.players.find(p=>p.id===d.id);
+    if(p) p.coins=d.coins||0;
+  });
+  renderLB();
 }
 
 /* ══ PUSH STATE ══ */
@@ -664,6 +697,13 @@ function applyEffectObs(mv,pi,done){
     toast('💰 '+p.name+' robbed someone!','tr');
     addLog(p.name,'💰 HEIST! Stole '+(mv.steal_amt||0)+' coins!','#e03030');
     flash('rgba(224,48,48,.18)'); burst(mv.steal_amt||0,false); renderLB(); done(); return;
+  }
+  if(mv.effect==='heist_pending'){
+    // Roller is picking a target — freeze observers with waiting message
+    callout('🟥 HEIST! '+p.name+' is choosing who to rob...','heist',12000);
+    addLog(p.name,'deciding who to rob...','#e03030');
+    // Don't call done() — stay frozen, next update will have the real heist result
+    return;
   }
   if(mv.effect==='heist_no_target'){
     callout('🟥 HEIST — no one to rob!','heist',2500);
@@ -861,6 +901,8 @@ function applyEffect(pi,roll,newPos,looped,done){
       addLog(p.name,'Heist — no targets!','#e03030');
       done({...base,effect:'heist_no_target'}); return;
     }
+    // Push heist_pending NOW so all other screens freeze and show waiting message
+    pushTurn({...base,effect:'heist_pending'});
     callout('🟥 HEIST! '+p.name+' — pick your target! (10s)','heist',10000);
     flash('rgba(224,48,48,.12)');
     showHPicker(pi,tgts,(tg,amt)=>{
