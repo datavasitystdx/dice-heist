@@ -437,7 +437,7 @@ function subscribeGame(){
           G.cur = newTurn;
           await syncPlayers();
           // Everyone animates — roller and observers alike
-          if(!G.busy) await playMoveFromDB(mv);
+          G.busy = false; await playMoveFromDB(mv);
         } else if(!mv || !mv.ts){
           // Turn changed with no move data (e.g. watchdog skip)
           G.cur = newTurn;
@@ -581,13 +581,8 @@ function animMove(pi,steps,finalPos,cb){
 
 /* ══ PLAY MOVE FROM DB — runs on ALL devices including the roller ══ */
 async function playMoveFromDB(mv){
-  if(G.busy && mv.player_id === myId){
-    // We're the roller and already set busy=true, just animate
-  } else if(G.busy){
-    return; // another animation in progress
-  } else {
-    G.busy=true;
-  }
+  // Always reset busy and run — the subscribeGame already reset it before calling us
+  G.busy=true;
 
   const pi=G.players.findIndex(p=>p.id===mv.player_id);
   if(pi<0){G.busy=false;setupTurn();return;}
