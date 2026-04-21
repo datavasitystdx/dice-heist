@@ -199,6 +199,21 @@ input::placeholder{color:#c0b8a8;font-weight:500}
 @keyframes taSlam{from{transform:scale(.3) rotate(-5deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
 @keyframes imgP{from{transform:scale(1)}to{transform:scale(1.06)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* RESET MODAL */
+.reset-link{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--muted);text-align:center;cursor:pointer;text-decoration:underline;opacity:.5;margin-top:4px}
+.reset-link:hover{opacity:1;color:var(--red)}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;display:none;align-items:center;justify-content:center}
+.modal-bg.on{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:28px;width:90%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#e03030,#ff6666);border-radius:20px 20px 0 0}
+.modal-title{font-family:var(--fd);font-size:22px;letter-spacing:2px;color:var(--red);margin-bottom:6px}
+.modal-sub{font-family:var(--fm);font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:16px}
+.modal-btns{display:flex;gap:10px;margin-top:14px}
+.btn-cancel{background:transparent;border:2px solid var(--bd);border-radius:12px;padding:12px 20px;font-family:var(--fb);font-weight:800;font-size:15px;cursor:pointer;color:var(--muted);flex:1}
+.btn-cancel:hover{border-color:var(--muted)}
+.btn-danger{background:linear-gradient(135deg,#ff6666,var(--red));color:#fff;border:none;border-radius:12px;padding:12px 20px;font-family:var(--fb);font-weight:800;font-size:15px;cursor:pointer;flex:1;box-shadow:0 4px 14px rgba(224,48,48,.3)}
+.btn-danger:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(224,48,48,.45)}
 </style>
 </head>
 <body>
@@ -256,6 +271,21 @@ input::placeholder{color:#c0b8a8;font-weight:500}
       <div class="leg"><div class="leg-i">⬛</div><div><div class="leg-n">Trap</div><div class="leg-e" style="color:#555">LOSE 4 COINS</div></div></div>
       <div class="leg"><div class="leg-i">⬜</div><div><div class="leg-n">Normal</div><div class="leg-e" style="color:var(--muted)">NOTHING</div></div></div>
     </div>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-bg" id="reset-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔄 RESET GAME</div>
+    <div class="modal-sub">ADMIN PASSWORD REQUIRED</div>
+    <input id="reset-pw" type="password" placeholder="Enter admin password..." autocomplete="off">
+    <div class="err" id="reset-err" style="display:none;margin-top:8px"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeReset()">CANCEL</button>
+      <button class="btn-danger" onclick="confirmReset()">RESET GAME</button>
+    </div>
+  <div class="reset-link" onclick="openReset()">↺ reset game</div>
   </div>
 </div>
 
@@ -928,6 +958,42 @@ function endGame(){
 function scr(n){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(n).classList.add('on')}
 function showErr(m){const e=document.getElementById('lob-err');e.textContent=m;e.style.display=m?'block':'none'}
 function quitGame(){if(confirm('Quit?')){if(G.tiv)clearInterval(G.tiv);if(G.siv)clearInterval(G.siv);if(G_watchdog)clearTimeout(G_watchdog);location.reload()}}
+
+/* ══ RESET GAME ══ */
+function openReset(){
+  document.getElementById('reset-pw').value='';
+  document.getElementById('reset-err').style.display='none';
+  document.getElementById('reset-modal').classList.add('on');
+  setTimeout(()=>document.getElementById('reset-pw').focus(),100);
+}
+function closeReset(){
+  document.getElementById('reset-modal').classList.remove('on');
+}
+async function confirmReset(){
+  const pw=document.getElementById('reset-pw').value.trim();
+  if(pw!==ADMIN_PW){
+    const e=document.getElementById('reset-err');
+    e.textContent='Wrong password!';e.style.display='block';return;
+  }
+  // Init supabase if not already
+  if(!sb) initSB();
+  try{
+    const btn=document.querySelector('.btn-danger');
+    btn.textContent='Resetting...'; btn.disabled=true;
+    // Delete all players first, then all rooms
+    await sb.from('players').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    await sb.from('rooms').delete().neq('id','00000000-0000-0000-0000-000000000000');
+    closeReset();
+    // Reload so everyone starts fresh
+    toast('✅ Game reset! Reloading...','tgr');
+    setTimeout(()=>location.reload(),1500);
+  }catch(e){
+    const err=document.getElementById('reset-err');
+    err.textContent='Reset failed: '+e.message;err.style.display='block';
+    document.querySelector('.btn-danger').textContent='RESET GAME';
+    document.querySelector('.btn-danger').disabled=false;
+  }
+}
 </script>
 </body>
 </html>
