@@ -351,12 +351,13 @@ const AVA_DATA=[
    Push to DB AFTER animation completes.
 ───────────────────────────────────────────────────────────── */
 const TILES = [
-  'safe','norm','norm','norm','norm',
-  'bank','norm','norm','heist','norm',
-  'bank','norm','norm','trap','norm',
-  'bank','norm','norm','norm','norm',
-  'norm','norm','norm','norm','norm',
-  'bank','norm','norm','norm','norm'
+  'safe','norm','norm','norm','norm',  // 0-4
+  'bank','norm','norm','heist','norm',  // 5-9
+  'bank','norm','norm','trap','norm',  // 10-14
+  'bank','heist','norm','norm','norm',  // 15-19
+  'bank','norm','norm','norm','heist',  // 20-24
+  'bank','norm','norm','norm','norm',  // 25-29
+  // tiles: 0=start 5,10,15,20,25=bank 8,16,24=heist 13=trap
 ];
 const BSIZE=30, GSECS=600, TSECS=10, MDELAY=380;
 const DFACE=['⚀','⚁','⚂','⚃','⚄','⚅'];
