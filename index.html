@@ -351,13 +351,13 @@ const AVA_DATA=[
    Push to DB AFTER animation completes.
 ───────────────────────────────────────────────────────────── */
 const TILES = [
-  'safe','norm','norm','norm','norm',  // 0-4
-  'bank','norm','norm','heist','norm',  // 5-9
-  'bank','norm','norm','trap','norm',  // 10-14
-  'bank','heist','norm','norm','norm',  // 15-19
-  'bank','norm','norm','norm','heist',  // 20-24
-  'bank','norm','norm','norm','norm',  // 25-29
-  // tiles: 0=start 5,10,15,20,25=bank 8,16,24=heist 13=trap
+  'safe','norm','norm','norm','heist',  // 0-4   (4=heist NEW)
+  'bank','norm','norm','heist','norm',  // 5-9   (5=bank, 8=heist)
+  'bank','norm','norm','trap','norm',   // 10-14  (10=bank, 13=trap)
+  'bank','heist','norm','norm','norm',  // 15-19  (15=bank, 16=heist)
+  'heist','norm','norm','norm','heist', // 20-24  (20=heist NEW, 24=heist)
+  'bank','norm','norm','norm','norm'    // 25-29  (25=bank)
+  // tiles: 0=start 5,10,15,25=bank 4,8,16,20,24=heist 13=trap
 ];
 const BSIZE=30, GSECS=600, TSECS=10, MDELAY=380;
 const DFACE=['⚀','⚁','⚂','⚃','⚄','⚅'];
@@ -418,7 +418,7 @@ async function joinGame(){
     myAvaId=ava.id; myAvaImg=ava.img; myName=name;
     const turnOrder=(existing||[]).length;
     const {data:player,error:pe}=await sb.from('players').insert({
-      room_id:myRoomId,name,avatar:myAvaId,coins:10,position:0,turn_order:turnOrder,is_admin:isAdmin
+      room_id:myRoomId,name,avatar:myAvaId,coins:5,position:0,turn_order:turnOrder,is_admin:isAdmin
     }).select().single();
     if(pe) throw pe;
     myId=player.id;
@@ -626,8 +626,12 @@ function calcEffect(p,pi,newPos){
     });
     // If nobody ahead, take richest
     if(!target) target=others.reduce((a,b)=>((b.coins||0)>(a.coins||0)?b:a));
-    const amt=Math.min(3,target.coins||0);
-    return {effect:'heist',coins_delta:amt,steal_from:target.id,steal_amt:amt};
+    // BOUNTY: if target is the leader (most coins), steal double!
+    const leader=G.players.reduce((a,b)=>((b.coins||0)>(a.coins||0)?b:a));
+    const isLeader=(target.id===leader.id && (leader.coins||0)>0);
+    const baseAmt=Math.min(3,target.coins||0);
+    const amt=isLeader?Math.min(6,target.coins||0):baseAmt;
+    return {effect:'heist',coins_delta:amt,steal_from:target.id,steal_amt:amt,bounty:isLeader};
   }
   if(t==='trap'){
     const loss=Math.min(3,p.coins||0);
@@ -647,9 +651,10 @@ function applyEffectLocal(eff,pi){
   } else if(eff.effect==='heist'&&eff.steal_from){
     const tg=G.players.find(pl=>pl.id===eff.steal_from);
     if(tg){tg.coins=Math.max(0,tg.coins-eff.steal_amt); p.coins=Math.max(0,(p.coins||0)+eff.steal_amt);}
-    callout('🟥 HEIST! '+p.name+' stole '+eff.steal_amt+' coins from '+(tg?tg.name:'someone')+'!','heist',3500);
-    toast('💰 HEIST! Stole '+eff.steal_amt,'tr');
-    addLog(p.name,'🟥 Heist! Stole '+eff.steal_amt+' from '+(tg?tg.name:'?'),'#e03030');
+    const bountyTxt=eff.bounty?' 🎯 BOUNTY DOUBLE!':'';
+    callout('🟥 HEIST!'+bountyTxt+' '+p.name+' stole '+eff.steal_amt+' coins from '+(tg?tg.name:'someone')+'!','heist',3500);
+    toast('💰'+(eff.bounty?' 🎯 BOUNTY!':'')+' Stole '+eff.steal_amt,'tr');
+    addLog(p.name,'🟥 Heist'+(eff.bounty?' 🎯 BOUNTY':'')+'! Stole '+eff.steal_amt+' from '+(tg?tg.name:'?'),'#e03030');
     flash('rgba(224,48,48,.18)'); burst(eff.steal_amt,false);
   } else if(eff.effect==='heist_no_target'){
     callout('🟥 HEIST — no one to rob!','heist',2500);
@@ -849,7 +854,8 @@ function renderLB(){
     const isC=G.players[ci]?.id===p.id; const tile=TM[TILES[p.pos||0]];
     const isMe=p.id===myId;
     const d=document.createElement('div'); d.className='lbr'+(isC?' cur':'');
-    d.innerHTML=`${isC?'<div class="lbdot"></div>':''}<div class="lbr-rk ${rc[ri]||''}">#${ri+1}</div><img class="lbr-img" src="${p.img}" alt="${p.name}"><div class="lbr-i"><div class="lbr-n">${p.name}${isMe?' <span style="font-size:9px;color:var(--green);font-family:var(--fm)">YOU</span>':''}</div><div class="lbr-t" style="color:${tile.lc}">${tile.ico} ${tile.lbl} · tile ${p.pos||0}</div></div><div class="lbr-c">${p.coins||0}🪙</div>`;
+    const isLeader=(ri===0&&(p.coins||0)>0);
+    d.innerHTML=`${isC?'<div class="lbdot"></div>':''}<div class="lbr-rk ${rc[ri]||''}">#${ri+1}</div><img class="lbr-img" src="${p.img}" alt="${p.name}"><div class="lbr-i"><div class="lbr-n">${p.name}${isMe?' <span style="font-size:9px;color:var(--green);font-family:var(--fm)">YOU</span>':''}${isLeader?' <span style="font-size:11px" title="Bounty target — heist steals double!">🎯</span>':''}</div><div class="lbr-t" style="color:${tile.lc}">${tile.ico} ${tile.lbl} · tile ${p.pos||0}</div></div><div class="lbr-c">${p.coins||0}🪙</div>`;
     el.appendChild(d);
   });
 }
